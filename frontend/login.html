@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRISIS CONNECT | Secure Login</title>
+  <meta name="description" content="CrisisConnect Disaster Intelligence Platform — Secure Command Center Login">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="css/base.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  
+  <!-- Page Specific Styles -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/login.css?v=2.0">
+</head>
+<body>
+
+  <!-- Animated Map Background -->
+  <div id="map-bg" style="position: absolute; top:0; left:0; width:100%; height:100%; z-index:0; filter: contrast(1.1) brightness(0.6);"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar" style="position:relative; z-index:100;">
+    <a class="nav-brand nav-left" href="login.html?v=2.0" style="text-decoration:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="2,12 5,12 6.5,8 8,15 9.5,9 11,14 12,12 14,12 22,12"/>
+      </svg>
+      <h1><span class="brand-crisis">CRISIS</span><span class="brand-connect">CONNECT</span></h1>
+    </a>
+    <div class="nav-right">
+      <div class="live-pill">
+        <div class="live-dot"></div>
+        SECURE CHANNEL
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="card-logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="2,12 5,12 6.5,8 8,15 9.5,9 11,14 12,12 14,12 22,12"/>
+          </svg>
+        </div>
+        <h2><span class="brand-crisis">CRISIS</span><span class="brand-connect">CONNECT</span></h2>
+        <p class="subtitle">Crisis Intelligence Dashboard</p>
+        <div class="status-line">
+          <div class="status-dot-ok"></div>
+          <span>SYSTEMS OPERATIONAL</span>
+          &nbsp;•&nbsp;
+          <div class="status-dot-red"></div>
+          <span class="mono" id="active-incidents">7 ACTIVE INCIDENTS</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Error Banner -->
+      <div class="error-banner" id="error-banner">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span id="error-msg">AUTHENTICATION FAILED — Invalid credentials.</span>
+      </div>
+
+      <!-- Success Banner -->
+      <div class="success-banner" id="success-banner">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>ACCESS GRANTED — Redirecting to command center…</span>
+      </div>
+
+      <!-- Form -->
+      <form id="login-form" novalidate>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email-input">Operator Email</label>
+          <div class="input-wrap">
+            <input
+              id="email-input"
+              class="form-input"
+              type="email"
+              autocomplete="email"
+              placeholder="operator@crisisconnect.io"
+              required
+            >
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label for="pw-input">Access Key</label>
+          <div class="input-wrap">
+            <input
+              id="pw-input"
+              class="form-input"
+              type="password"
+              autocomplete="current-password"
+              placeholder="••••••••••••"
+              required
+            >
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <button type="button" class="pw-toggle" id="pw-toggle" title="Toggle visibility" aria-label="Show/hide password">
+              <svg id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="options-row">
+          <input type="checkbox" id="remember-input">
+          <label for="remember-input" class="checkbox-wrap">
+            <div class="custom-cb">
+              <svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg>
+            </div>
+            <span class="cb-label-text">Remember this terminal</span>
+          </label>
+          <a href="#" class="forgot-link" id="forgot-link">FORGOT KEY?</a>
+        </div>
+
+        <!-- Login Button -->
+        <button type="submit" class="btn-login" id="btn-login">
+          <div class="spinner"></div>
+          <span class="btn-label">AUTHORIZE ACCESS</span>
+          <svg class="btn-label" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+
+        <!-- Demo Login -->
+        <button type="button" class="btn-demo" id="btn-demo">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          DEMO ACCESS — Pre-fill credentials
+        </button>
+
+      </form>
+
+      <!-- Footer -->
+      <div class="card-footer">
+        CRISISCONNECT v1.0 &nbsp;|&nbsp; ENCRYPTED CHANNEL &nbsp;|&nbsp; TLS 1.3<br>
+        Authorized access only. All sessions are monitored and logged.
+      </div>
+    </div>
+  </main>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div>SESSION: <span class="mono">UNAUTHENTICATED</span></div>
+    <div>CRISISCONNECT v1.0 &nbsp;|&nbsp; SECURE LOGIN PORTAL</div>
+    <div class="mono" id="timestamp"></div>
+  </div>
+
+  <!-- Map Logic -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Shared Logic -->
+  <script src="js/auth.js?v=2.0"></script>
+  
+  <!-- Page Specific Logic -->
+  <script src="js/login.js?v=2.0"></script>
+</body>
+</html>
+

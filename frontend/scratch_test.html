@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<body style="background: black; color: white;">
+    <div id="globe-container" style="width:420px; height:380px; position:relative;"></div>
+    <script type="module">
+        import createGlobe from 'https://cdn.skypack.dev/cobe';
+        
+        let phi = 0;
+        let canvas = document.createElement("canvas");
+        canvas.style.width = "420px";
+        canvas.style.height = "380px";
+        canvas.width = 840;
+        canvas.height = 760;
+        document.getElementById("globe-container").prepend(canvas);
+    
+        createGlobe(canvas, {
+          devicePixelRatio: 2,
+          width: 840,
+          height: 760,
+          phi: 0,
+          theta: 0.3,
+          dark: 1,
+          diffuse: 1.2,
+          scale: 1,
+          mapSamples: 12000,
+          mapBrightness: 6,
+          baseColor: [0.1, 0.1, 0.15],
+          markerColor: [1, 0.2, 0.0],
+          glowColor: [0.2, 0.05, 0.0],
+          markers: [
+            { location: [31.5, 34.5], size: 0.08 },
+            { location: [48.4, 35.0], size: 0.06 },
+            { location: [15.6, 32.5], size: 0.05 },
+            { location: [24.0, 121.0], size: 0.04 }
+          ],
+          onRender: (state) => {
+            state.phi = phi;
+            phi += 0.005;
+          }
+        });
+        console.log("Globe created successfully");
+    </script>
+</body>
+</html>

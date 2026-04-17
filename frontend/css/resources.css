@@ -1,0 +1,96 @@
+/* CrisisConnect Resource Planning Styles */
+
+.nav-center { flex: 1; display: flex; justify-content: center; }
+.search-input { background-color: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 16px 8px 40px; border-radius: 20px; width: 400px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="none" stroke="%23A08870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'); background-repeat: no-repeat; background-position: 12px center; background-size: 16px; }
+.search-input:focus { border-color: var(--cyan); }
+.search-input::placeholder { color: var(--muted); }
+
+/* Main Layout */
+.main-content { flex: 1; display: flex; background: var(--bg); position: relative; }
+#map { flex: 1; height: 100%; z-index: 1; background: var(--bg); }
+.right-panel { width: 340px; flex-shrink: 0; background: var(--bg2); border-left: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; overflow-y: auto; }
+
+/* Leaflet overrides */
+.leaflet-container { background: var(--bg) !important; font-family: 'DM Sans', sans-serif; }
+.leaflet-control-zoom { border: 1px solid var(--border) !important; background: var(--bg2) !important; filter: invert(1) hue-rotate(180deg); }
+
+/* Tent Marker */
+.tent-marker { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; position: relative; }
+.tent-marker svg { width: 20px; height: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); }
+.pulse-bg { position: absolute; width: 10px; height: 10px; background: currentColor; border-radius: 50%; opacity: 0.3; animation: glow 2s infinite; z-index: -1; }
+
+@keyframes glow { 0% { transform: scale(1); opacity: 0.4; } 100% { transform: scale(3.5); opacity: 0; } }
+
+/* Custom Leaflet Popup */
+.leaflet-popup-content-wrapper { background: rgba(14, 9, 5, 0.95); color: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.8); font-family: 'DM Sans'; padding: 0; }
+.leaflet-popup-tip { background: rgba(14, 9, 5, 0.95); border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+.leaflet-popup-content { margin: 16px; width: 220px !important; }
+.pop-header { font-family: 'Rajdhani', sans-serif; font-size: 18px; color: #fff; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.pop-type { font-size: 11px; color: var(--cyan); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; display: block; letter-spacing: 1px; }
+
+.pop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+.pop-grid-item { display: flex; flex-direction: column; gap: 2px; }
+.pop-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+.pop-val { font-family: 'Share Tech Mono'; font-size: 14px; font-weight: bold; }
+.pop-pct { font-size: 10px; padding: 2px 4px; border-radius: 4px; display: inline-block; margin-top: 2px;}
+
+.pop-needs { display: flex; flex-direction: column; gap: 6px; }
+.need-row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+.need-left { display: flex; align-items: center; gap: 8px; }
+.sys-sq { width: 10px; height: 10px; border-radius: 2px; }
+.sq-red { background: var(--red); box-shadow: 0 0 5px var(--red); }
+.sq-amber { background: var(--amber); box-shadow: 0 0 5px var(--amber); }
+.sq-green { background: var(--green); box-shadow: 0 0 5px var(--green); }
+.need-lbl { font-weight: 600; color: #fff; }
+.need-status { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+
+/* Map Legend Overlay */
+.map-legend { position: absolute; bottom: 20px; right: 20px; background: rgba(14, 9, 5, 0.9); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; backdrop-filter: blur(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+.legend-title { font-family: 'Rajdhani', sans-serif; font-size: 14px; color: var(--text); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-bottom: 4px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+
+/* Right Panel UI */
+.panel-header { padding: 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(14, 9, 5, 0.95); backdrop-filter: blur(8px); z-index: 20; display: flex; flex-direction: column; gap: 4px; }
+.panel-header h2 { font-size: 22px; color: var(--cyan); margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+.panel-header p { font-size: 13px; color: #fff; margin: 0; font-weight: 500; }
+
+.panel-content { padding: 24px; display: flex; flex-direction: column; gap: 32px; }
+
+.section-title { font-size: 14px; color: #fff; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 20px; }
+
+/* Resource Bars */
+.resource-list { display: flex; flex-direction: column; gap: 20px; }
+.res-row { display: flex; flex-direction: column; gap: 8px; }
+.res-top { display: flex; justify-content: space-between; align-items: center; }
+.res-lbl { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text); }
+.res-pct { font-family: 'Share Tech Mono', monospace; font-size: 14px; font-weight: bold; }
+.res-bar-wrap { width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; position: relative; }
+.res-bar-fill { height: 100%; border-radius: 4px; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); width: 0%; }
+
+.c-red { color: var(--red); }
+.c-amber { color: var(--amber); }
+.c-green { color: var(--green); }
+.bg-red { background: var(--red); box-shadow: 0 0 10px rgba(255,59,59,0.5); }
+.bg-amber { background: var(--amber); box-shadow: 0 0 10px rgba(255,179,64,0.5); }
+.bg-green { background: var(--green); box-shadow: 0 0 10px rgba(0,230,118,0.5); }
+
+/* Alert Cards */
+.alert-list { display: flex; flex-direction: column; gap: 12px; }
+.alert-card { padding: 12px 16px; background: rgba(255,59,59,0.05); border: 1px solid var(--border); border-left: 4px solid var(--red); border-radius: 4px; display: flex; flex-direction: column; gap: 6px; }
+.alert-icon { display: flex; gap: 8px; align-items: center; font-size: 11px; font-weight: bold; color: var(--red); text-transform: uppercase; letter-spacing: 0.5px; }
+.alert-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+.alert-msg { font-size: 13px; color: var(--text); line-height: 1.4; }
+
+/* Supply Zones */
+.zone-list { display: flex; flex-direction: column; gap: 12px; }
+.zone-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; transition: all 0.2s; cursor: pointer; }
+.zone-item:hover { border-color: var(--cyan); background: rgba(255, 85, 0, 0.05); transform: translateX(2px); }
+.zone-left { display: flex; align-items: center; gap: 12px; }
+.zone-dot { width: 8px; height: 8px; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 5px var(--cyan); }
+.zone-name { font-size: 13px; font-weight: 600; color: #fff; }
+.zone-dist { font-family: 'Share Tech Mono'; font-size: 13px; color: var(--cyan); background: rgba(255,85,0,0.1); padding: 2px 6px; border-radius: 4px; }
+
+/* Request Button */
+.req-btn { width: 100%; background: transparent; border: 1px solid var(--cyan); color: var(--cyan); font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; padding: 14px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; text-decoration: none; }
+.req-btn:hover { background: rgba(255, 85, 0, 0.1); box-shadow: 0 0 16px rgba(255,85,0,0.2); }
+.req-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }

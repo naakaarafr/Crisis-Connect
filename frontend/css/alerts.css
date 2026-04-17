@@ -1,0 +1,113 @@
+/* CrisisConnect Alerts Feed Styles */
+
+.main-wrap { flex: 1; display: flex; flex-direction: column; background: var(--bg); position: relative; }
+
+/* Filter Bar */
+.filter-bar { height: 50px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
+.filter-tabs { display: flex; height: 100%; gap: 24px; }
+.filter-tab { font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; position: relative; transition: color 0.2s; }
+.filter-tab:hover { color: var(--text); }
+.filter-tab.active { color: #fff; }
+.filter-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: var(--cyan); border-radius: 3px 3px 0 0; box-shadow: 0 -2px 8px rgba(255,85,0,0.4); }
+.filter-badge { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 2px 6px; font-size: 10px; margin-left: 6px; font-family: 'Share Tech Mono'; }
+
+.refresh-toggle { display: flex; align-items: center; gap: 12px; font-family: 'Share Tech Mono'; font-size: 11px; color: var(--muted); }
+.toggle-switch { width: 32px; height: 16px; background: var(--cyan); border-radius: 10px; position: relative; cursor: pointer; transition: background 0.2s; }
+.toggle-switch::after { content: ''; position: absolute; width: 12px; height: 12px; background: #fff; border-radius: 50%; top: 2px; right: 2px; transition: transform 0.2s; }
+.toggle-switch.off { background: rgba(255,255,255,0.2); }
+.toggle-switch.off::after { transform: translateX(-16px); }
+
+/* Content Columns */
+.content-columns { flex: 1; display: flex; overflow: hidden; }
+
+/* Left: Alert Feed */
+.alert-feed { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+
+/* Real-Time Cards */
+.alert-card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; display: flex; position: relative; padding: 16px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.alert-card:hover { background: rgba(22, 12, 6, 0.9); transform: translateX(2px); border-color: rgba(160, 136, 112, 0.4); }
+.alert-card.active { background: rgba(255,85,0,0.05); border-color: var(--cyan); }
+
+.border-left { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 6px 0 0 6px; }
+
+.alert-layout { display: flex; width: 100%; align-items: center; gap: 16px; padding-left: 8px; }
+
+.icon-wrapper { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+.icon-wrapper svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.alert-core { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.alert-title { font-family: 'Rajdhani'; font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.5px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
+.alert-meta { font-size: 11px; color: var(--cyan); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+.alert-meta span.bull { color: var(--muted); margin: 0 4px; }
+.alert-desc { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+
+.alert-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0; height: 100%; gap: 8px; }
+.alert-time { font-family: 'Share Tech Mono'; font-size: 11px; color: var(--muted); }
+.alert-pill { font-family: 'Rajdhani'; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+.view-link { font-family: 'Rajdhani'; font-size: 11px; font-weight: 700; color: var(--cyan); text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0; transition: opacity 0.2s; }
+.alert-card:hover .view-link { opacity: 1; }
+
+.badge.pop { transform: scale(1.4); }
+
+/* Card Animations */
+@keyframes alertSlideIn {
+  0% { transform: translateY(-40px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.card-animate { animation: alertSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.glow-left { box-shadow: 0 0 16px currentColor; animation: pulseGlow 2s infinite alternate; }
+@keyframes pulseGlow { from { opacity: 0.6; } to { opacity: 1; } }
+
+/* Alerts Colors */
+.sev-critical { color: var(--red); }
+.bg-critical { background-color: var(--red); box-shadow: 0 0 8px rgba(255,59,59,0.5); }
+.sev-warning { color: var(--amber); }
+.bg-warning { background-color: var(--amber); box-shadow: 0 0 8px rgba(255,179,64,0.5); }
+.sev-info { color: var(--cyan); }
+.bg-info { background-color: var(--cyan); box-shadow: 0 0 8px rgba(255,85,0,0.5); }
+.sev-resolved { color: var(--green); }
+.bg-resolved { background-color: var(--green); box-shadow: 0 0 8px rgba(0,230,118,0.5); }
+
+/* Empty State */
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); gap: 16px; display: none; }
+.empty-state.show { display: flex; }
+.empty-state svg { width: 48px; height: 48px; stroke: var(--cyan); fill: none; stroke-width: 1; opacity: 0.5; }
+.empty-state p { font-family: 'Rajdhani'; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; margin:0;}
+
+/* Right: Detail Panel */
+.detail-panel { width: 340px; background: var(--bg2); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 10; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: absolute; right: 0; top: 0; bottom: 0; }
+.detail-panel.open { transform: translateX(0); position: relative; }
+
+.dp-header { padding: 24px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; background: rgba(15,22,41,0.9); }
+.dp-title { font-family: 'Rajdhani'; font-size: 20px; color: var(--cyan); margin: 0; line-height: 1.1; text-transform: uppercase; }
+.dp-sub { font-size: 12px; color: #fff; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
+.dp-close { cursor: pointer; color: var(--muted); opacity: 0.6; transition: opacity 0.2s; }
+.dp-close:hover { opacity: 1; color: var(--text); }
+
+.dp-content { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; flex: 1; }
+
+.dp-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0; }
+
+.dp-section-lbl { font-family: 'Rajdhani'; font-size: 14px; color: #fff; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+
+/* Gauge in Panel */
+.gauge-wrap { display: flex; justify-content: center; margin: 16px 0; }
+.gauge-svg { width: 140px; }
+.g-arc-bg { fill: none; stroke: var(--bg); stroke-width: 10; stroke-linecap: round; }
+.g-arc-fill { fill: none; stroke-width: 10; stroke-linecap: round; stroke-dasharray: 0, 157; transition: stroke-dasharray 1s; }
+.g-text { font-family: 'Share Tech Mono'; font-size: 24px; font-weight: bold; fill: #fff; text-anchor: middle; dominant-baseline: middle; }
+
+/* Stats Grid */
+.dp-stats { display: flex; flex-direction: column; gap: 12px; }
+.dp-stat-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
+.dp-stat-l { font-size: 11px; color: var(--text); text-transform: uppercase; }
+.dp-stat-r { font-family: 'Share Tech Mono'; font-size: 13px; font-weight: bold; color: var(--amber); }
+
+.dp-status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,230,118,0.1); border: 1px solid var(--green); border-radius: 4px; color: var(--green); font-family: 'Share Tech Mono'; font-size: 12px; font-weight: bold; width: 100%; justify-content: center; }
+
+/* Panel Actions */
+.dp-actions { display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding: 24px; border-top: 1px solid var(--border); background: var(--bg); }
+.act-btn { background: transparent; border: 1px solid var(--cyan); color: var(--cyan); padding: 12px; font-family: 'Rajdhani'; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-radius: 4px; cursor: pointer; text-align: center; text-decoration: none; transition: all 0.2s; }
+.act-btn:hover { background: rgba(255,85,0,0.1); box-shadow: 0 0 10px rgba(255,85,0,0.2); }
+.act-btn.solid { background: var(--cyan); color: var(--bg); border: none; }
+.act-btn.solid:hover { background: #FF7733; box-shadow: 0 0 16px rgba(255,85,0,0.4); }

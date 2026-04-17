@@ -1,0 +1,104 @@
+/* CrisisConnect Simulation Engine Styles */
+
+.nav-center { flex: 1; display: flex; justify-content: center; }
+.search-input { background-color: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 16px 8px 40px; border-radius: 20px; width: 400px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" fill="none" stroke="%23A08870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'); background-repeat: no-repeat; background-position: 12px center; background-size: 16px; }
+.search-input:focus { border-color: var(--cyan); }
+.search-input::placeholder { color: var(--muted); }
+
+/* Map Layout */
+.main-content { flex: 1; position: relative; background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+#map { flex: 1; height: 100%; z-index: 1; background: var(--bg); cursor: default; }
+.map-placement-mode { cursor: crosshair !important; }
+
+/* Left Panel: Simulation Engine */
+.engine-panel { width: 380px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; overflow-y: auto; position: relative; }
+
+.panel-header { padding: 24px 24px 16px; border-bottom: 1px solid var(--border); background: var(--bg); position: relative; overflow: hidden; }
+.panel-header h2 { font-size: 18px; color: var(--cyan); text-transform: uppercase; margin: 0; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+.panel-header h2 svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+.scan-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--cyan); opacity: 0.15; box-shadow: 0 0 10px var(--cyan); animation: scan 3s linear infinite; pointer-events: none; }
+@keyframes scan { 0% { top: -10px; } 100% { top: 100%; } }
+
+.engine-form { padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+
+/* Custom Form Elements */
+.sys-select { appearance: none; background: rgba(14, 9, 5, 0.8) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23A08870" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>') no-repeat right 12px center; border: 1px solid var(--border); color: #fff; padding: 12px 14px; border-radius: 4px; font-family: 'DM Sans'; font-size: 14px; cursor: pointer; outline: none; transition: border-color 0.2s; }
+.sys-select:focus { border-color: var(--cyan); box-shadow: 0 0 8px rgba(255,85,0,0.2); }
+.sys-select option { background: var(--bg2); color: #fff; }
+
+.sys-input { appearance: none; background: rgba(14, 9, 5, 0.8); border: 1px solid var(--border); color: #fff; padding: 12px 14px; border-radius: 4px; font-family: 'Share Tech Mono'; font-size: 14px; outline: none; transition: border-color 0.2s; }
+.sys-input::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.6); cursor: pointer; }
+.sys-input:focus { border-color: var(--cyan); }
+
+/* Range Slider */
+.sev-header { display: flex; justify-content: space-between; align-items: center; }
+.sev-val-large { font-family: 'Share Tech Mono'; font-size: 28px; font-weight: bold; line-height: 1; }
+.sys-range { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; outline: none; margin: 10px 0; }
+.sys-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+.sev-label { font-size: 12px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+
+/* Map Set Button */
+.btn-set-map { background: transparent; border: 2px dashed var(--cyan); color: var(--cyan); padding: 10px; border-radius: 4px; font-family: 'Rajdhani'; font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; letter-spacing: 1px; }
+.btn-set-map:hover { background: rgba(255,85,0,0.1); }
+.btn-set-map.active { background: var(--cyan); color: var(--bg); border-style: solid; box-shadow: 0 0 15px rgba(255,85,0,0.4); }
+.coord-display { font-family: 'Share Tech Mono'; font-size: 12px; color: var(--muted); margin-top: 4px; text-align: center; }
+
+/* Pills / Toggles */
+.pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill-btn { flex: 1; min-width: 70px; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 8px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; text-align: center; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
+.pill-btn:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+.pill-btn.active { background: rgba(255, 85, 0, 0.1); border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px rgba(255,85,0,0.1); }
+.terrain-group .pill-btn { border-radius: 4px; }
+
+/* Run Button */
+.btn-run { background: rgba(255, 85, 0, 0.1); border: 1px solid var(--cyan); color: var(--cyan); font-family: 'Rajdhani'; font-size: 16px; font-weight: 700; letter-spacing: 3px; padding: 16px; border-radius: 6px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s; position: relative; overflow: hidden; margin-top: 10px; }
+.btn-run:hover { background: rgba(255, 85, 0, 0.2); box-shadow: 0 0 20px rgba(255,85,0,0.25); text-shadow: 0 0 8px rgba(255,85,0,0.8); }
+.btn-run.loading { border-color: var(--muted); color: var(--muted); cursor: default; background: transparent; }
+.btn-scan { position: absolute; top: 0; bottom: 0; left: -20px; width: 10px; background: rgba(255,255,255,0.8); filter: blur(4px); opacity: 0; transform: skewX(-20deg); }
+.btn-run.loading .btn-scan { animation: buttonScan 1.5s infinite linear; opacity: 0.5; }
+@keyframes buttonScan { 0% { left: -10%; } 100% { left: 110%; } }
+
+.progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; margin-top: -12px; display: none; }
+.progress-fill { height: 100%; background: var(--cyan); width: 0%; box-shadow: 0 0 10px var(--cyan); }
+
+/* Results Box */
+.sim-results { margin-top: 16px; background: rgba(0,230,118,0.05); border: 1px solid var(--green); border-radius: 6px; padding: 20px; display: none; flex-direction: column; gap: 16px; transform: translateY(20px); opacity: 0; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s; }
+.sim-results.show { transform: translateY(0); opacity: 1; display: flex; }
+
+.res-head { font-family: 'Rajdhani'; font-size: 16px; color: var(--green); margin: 0; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+.res-grid { display: flex; flex-direction: column; gap: 12px; }
+.res-item { display: flex; flex-direction: column; gap: 2px; }
+.res-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.res-val { font-family: 'Share Tech Mono'; font-size: 18px; font-weight: bold; }
+.res-val.c-cyan { color: var(--cyan); }
+.res-val.c-amber { color: var(--amber); }
+.res-val.c-red { color: var(--red); }
+.res-fine { font-size: 10px; color: rgba(160, 136, 112, 0.5); font-style: italic; margin-top: 8px; }
+
+/* Comparison Panel Overlay (Slides up on map) */
+.compare-panel { position: absolute; bottom: 0; left: 380px; right: 0; height: 200px; background: rgba(10, 6, 3, 0.95); border-top: 1px solid var(--border); z-index: 1000; transform: translateY(100%); transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; padding: 20px 40px; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+.compare-panel.show { transform: translateY(0); }
+
+.comp-header { font-family: 'Rajdhani'; font-size: 16px; color: #fff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.comp-legend { display: flex; gap: 16px; font-size: 11px; font-family: 'DM Sans'; color: var(--muted); }
+.leg-item { display: flex; align-items: center; gap: 6px; }
+.leg-bx { width: 12px; height: 12px; border-radius: 2px; }
+
+.comp-grid { display: flex; justify-content: space-between; gap: 40px; flex: 1; }
+.comp-col { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+.comp-lbl { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+
+.chart-dual { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.chart-bar-wrap { width: 100%; height: 10px; background: rgba(255,255,255,0.05); border-radius: 2px; display: flex; position: relative; }
+.chart-bar { height: 100%; border-radius: 2px; transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1); width: 0%; display: flex; align-items: center; }
+.cb-sim { background: var(--cyan); box-shadow: 0 0 8px rgba(255,85,0,0.4); z-index: 2; position: absolute; }
+.cb-hist { background: rgba(160, 136, 112, 0.4); position: absolute; z-index: 1; }
+
+/* Map overlays logic */
+.flow-path { stroke-dasharray: 6 12; animation: flowDash 1s linear infinite; }
+@keyframes flowDash { to { stroke-dashoffset: -18; } }
+
+/* Custom Leaflet Controls */
+.leaflet-control-zoom { border: 1px solid var(--border) !important; background: var(--bg2) !important; filter: invert(1) hue-rotate(180deg); margin-bottom: 220px !important; }

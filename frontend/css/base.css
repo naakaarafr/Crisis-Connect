@@ -1,0 +1,34 @@
+:root {
+    --bg: #0a0e1a;
+    --bg2: #110D0A;
+    --card: #1A1008;
+    --cyan: #FF5500;
+    --red: #ff3b3b;
+    --amber: #ffb340;
+    --green: #00e676;
+    --text: #e8eaf6;
+    --muted: #A08870;
+    --border: #2B1B10;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 { font-family: 'Rajdhani', sans-serif; }
+.data-font { font-family: 'Share Tech Mono', monospace; }
+.mono { font-family: 'Share Tech Mono', monospace; }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }

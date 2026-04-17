@@ -11,6 +11,13 @@ def create_app():
     """Application factory — create and configure the Flask app."""
     app = Flask(__name__)
 
+    # Enable CORS — allows the static frontend to call the API from any origin
+    try:
+        from flask_cors import CORS
+        CORS(app, resources={r"/*": {"origins": "*"}})
+    except ImportError:
+        pass  # flask-cors not installed; install with: pip install flask-cors
+
     # Register blueprints
     from app.routes.disaster import disaster_bp, disasters_bp
     from app.routes.simulation import simulation_bp

@@ -1,0 +1,403 @@
+/* CrisisConnect Landing Page Styles */
+
+:root {
+    --text-glow: 0 0 10px rgba(255, 85, 0, 0.5);
+    --neon-orange: #FF5500;
+}
+
+body {
+    background-color: var(--bg);
+    overflow: hidden;
+}
+
+/* Navbar */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-left svg {
+    width: 32px;
+    height: 32px;
+    color: var(--cyan);
+    filter: drop-shadow(var(--text-glow));
+}
+
+.brand-crisis { color: #fff; font-weight: 700; font-size: 24px; letter-spacing: 1px; }
+.brand-connect { color: var(--cyan); font-weight: 700; font-size: 24px; letter-spacing: 1px; }
+
+.nav-login-btn {
+    padding: 8px 24px;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    text-decoration: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.nav-login-btn:hover {
+    background: var(--cyan);
+    color: #000;
+    box-shadow: 0 0 15px var(--cyan);
+}
+
+/* Split Container */
+.split-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Hero Section (Left) */
+.hero-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 80px;
+    background: linear-gradient(135deg, rgba(0,0,0,1) 0%, rgba(10,14,26,1) 100%);
+    position: relative;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255, 85, 0, 0.02) 2px);
+    pointer-events: none;
+}
+
+.hero-content {
+    max-width: 600px;
+    z-index: 10;
+}
+
+.hero-badge {
+    color: var(--cyan);
+    font-size: 12px;
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    display: inline-block;
+    padding: 4px 12px;
+    border: 1px solid var(--cyan);
+    border-radius: 20px;
+}
+
+.hero-title {
+    font-size: 84px;
+    line-height: 0.9;
+    font-weight: 800;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    background: linear-gradient(to bottom, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtext {
+    font-size: 18px;
+    color: var(--muted);
+    margin-bottom: 40px;
+    line-height: 1.6;
+    max-width: 500px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 20px;
+}
+
+.primary-btn {
+    padding: 16px 32px;
+    background: var(--cyan);
+    border: none;
+    color: #000;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 4px;
+}
+
+.primary-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(255, 85, 0, 0.5);
+}
+
+.secondary-btn {
+    padding: 16px 32px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.secondary-btn:hover {
+    border-color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hero-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 80px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 2px;
+}
+
+/* Map Section (Right) */
+.map-section {
+    width: 50%;
+    position: relative;
+    background: #000;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Status Overlay */
+.status-overlay {
+    position: absolute;
+    top: 100px;
+    right: 40px;
+    z-index: 100;
+}
+
+.connection-status {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+}
+
+.status-dot.offline {
+    background: var(--red);
+    box-shadow: 0 0 10px var(--red);
+}
+
+.connection-status span {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* Info Card */
+.info-card {
+    position: absolute;
+    top: 100px;
+    left: 40px;
+    width: 260px;
+    background: rgba(17, 13, 10, 0.85);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 85, 0, 0.2);
+    padding: 0;
+    border-radius: 4px;
+    z-index: 100;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.info-header {
+    background: rgba(255, 85, 0, 0.1);
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 85, 0, 0.2);
+    position: relative;
+}
+
+.info-header h3 {
+    font-size: 14px;
+    color: var(--cyan);
+    letter-spacing: 1px;
+}
+
+.scanlines {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(255, 85, 0, 0.05) 2px);
+    pointer-events: none;
+}
+
+.info-body {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+}
+
+.info-row .label { color: var(--muted); font-weight: 700; }
+.info-row span:not(.label) { color: #fff; }
+
+/* SOS Button */
+.sos-container {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    z-index: 100;
+}
+
+.sos-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #ff3b3b;
+    border: none;
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 900;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(255, 59, 59, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.sos-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 40px rgba(255, 59, 59, 0.8);
+}
+
+.sos-btn.sent {
+    background: var(--amber);
+    box-shadow: 0 0 20px rgba(255, 179, 64, 0.5);
+}
+
+.sos-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #ff3b3b;
+    animation: sos-pulse-anim 2s infinite;
+    pointer-events: none;
+}
+
+@keyframes sos-pulse-anim {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(2); opacity: 0; }
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal {
+    background: #1a1008;
+    border: 1px solid rgba(255, 85, 0, 0.3);
+    padding: 30px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+
+.modal-header {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--cyan);
+    margin-bottom: 20px;
+}
+
+.modal p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-btn.confirm { background: #ff3b3b; color: #fff; }
+.modal-btn.cancel { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+
+.modal-btn.confirm:hover { background: #ff5555; }
+.modal-btn.cancel:hover { background: rgba(255,255,255,0.05); border-color: #fff; }
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .split-container { flex-direction: column; overflow-y: auto; }
+    .hero-section { min-height: 60vh; padding: 120px 40px 60px; }
+    .map-section { width: 100%; min-height: 40vh; height: 500px; }
+    .hero-title { font-size: 60px; }
+}

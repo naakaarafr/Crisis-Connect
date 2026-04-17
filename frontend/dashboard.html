@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRISIS CONNECT | Command Center</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="css/base.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  
+  <!-- Page Specific Styles -->
+  <link rel="stylesheet" href="css/dashboard.css?v=2.0">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="2,12 5,12 6.5,8 8,15 9.5,9 11,14 12,12 14,12 22,12"/>
+      </svg>
+      <h1><span class="brand-crisis">CRISIS</span><span class="brand-connect">CONNECT</span></h1>
+    </div>
+    <div class="nav-center">
+      <input type="text" class="search-input" placeholder="Search disasters, regions...">
+    </div>
+    <div class="nav-right">
+      <div class="bell-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <div class="badge data-font">3</div>
+      </div>
+      <div class="live-status">
+        <div class="live-dot"></div>
+        LIVE
+      </div>
+    </div>
+    <div class="nav-right-extra">
+      <span class="mono" id="nav-user"></span>
+      <button onclick="ccLogout()">⏏ LOGOUT</button>
+    </div>
+  </nav>
+
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <a href="dashboard.html?v=2.0" class="sidebar-btn active" title="Dashboard">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+      </a>
+      <a href="disaster.html?v=2.0" class="sidebar-btn" title="Disasters">
+        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      </a>
+      <a href="displacement.html?v=2.0" class="sidebar-btn" title="Displacement">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      </a>
+      <a href="resources.html?v=2.0" class="sidebar-btn" title="Resources">
+        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+      </a>
+      <a href="secondary-risk.html?v=2.0" class="sidebar-btn" title="Risk">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </a>
+      <a href="simulate.html?v=2.0" class="sidebar-btn" title="Simulate">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+      </a>
+      <a href="analytics.html?v=2.0" class="sidebar-btn" title="Analytics">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      </a>
+      <a href="alerts.html?v=2.0" class="sidebar-btn" title="Alerts">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      </a>
+      <a href="emergency.html?v=2.0" class="sidebar-btn" title="Emergency" style="margin-top:auto; margin-bottom: 10px;">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+      </a>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div id="map"></div>
+      
+      <!-- Overlays -->
+      <div class="stats-panel-wrapper" id="stats-wrapper">
+        <div class="stats-card">
+          <div class="panel-header">
+            <h2>INTELLIGENCE OVERVIEW</h2>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">ACTIVE DISASTERS</span>
+            <span class="stat-value val-cyan data-font" id="stat-active">-</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">PEOPLE AFFECTED</span>
+            <span class="stat-value val-amber data-font" id="stat-affected">-</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">CRITICAL ALERTS</span>
+            <span class="stat-value val-red data-font" id="stat-critical">-</span>
+          </div>
+        </div>
+        <button class="toggle-arrow" onclick="document.getElementById('stats-wrapper').classList.toggle('collapsed')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+      </div>
+
+      <div class="map-controls">
+        <button class="control-btn" id="btn-heatmap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10z"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="7" stroke-opacity="0.5"/></svg>
+          HEATMAP OFF
+        </button>
+        <button class="control-btn" id="btn-fit">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h6v2H5v4H3V3m18 0h-6v2h4v4h2V3m-2 18h-4v2h6v-6h-2v4M3 21h6v-2H5v-4H3v6"/></svg>
+          FIT ALL
+        </button>
+        <button class="control-btn" id="btn-refresh">
+          <span class="spin-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></span>
+          REFRESH
+        </button>
+      </div>
+
+      <!-- Slide Up Panel -->
+      <div class="slide-panel" id="disaster-panel">
+        <div class="panel-top">
+          <div>
+            <h3 class="disaster-title" id="p-title">Disaster Name</h3>
+            <span class="badge-pill" id="p-type">TYPE</span>
+          </div>
+          <button class="close-panel" id="close-panel">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <div class="severity-blocks" id="p-severity"></div>
+        <div class="affected-box">
+          <div class="affected-label">Registered Population Affected</div>
+          <div class="affected-num data-font" id="p-affected">0</div>
+        </div>
+        <a href="#" class="report-btn" id="p-btn">VIEW FULL REPORT &rarr;</a>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div>LAST UPDATED: <span id="timestamp" class="data-font"></span></div>
+    <div><div class="live-status" style="display:inline-flex;"><div class="live-dot"></div></div>&nbsp;&nbsp;CRISISCONNECT v1.0 | GLOBAL DISASTER INTELLIGENCE</div>
+  </div>
+
+  <!-- External Globe Scripts instead of Leaflet -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+  <!-- Shared Logic -->
+  <script src="js/auth.js?v=2.0"></script>
+  
+  <!-- Page Specific Logic -->
+  <script src="js/dashboard.js?v=2.0"></script>
+
+  <style>
+    .tactical-panel-wrapper {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tactical-panel-wrapper.collapsed {
+      transform: translateX(calc(100% - 44px)); /* Leaves button visible */
+    }
+    .tactical-arrow {
+      margin-bottom: 8px; /* Lift arrow slightly from bottom edge */
+    }
+    .tactical-panel-wrapper.collapsed .tactical-arrow svg {
+      transform: rotate(180deg);
+    }
+    .conflict-widget {
+      position: relative;
+      width: 420px;
+      background: rgba(5, 5, 10, 0.98);
+      border: 1px solid #ff660044;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+
+    .widget-header {
+      background: rgba(255, 102, 0, 0.15);
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ff660033;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 8px; }
+    .pill { background: #ff2200; color: #fff; font-weight: 900; font-size: 10px; padding: 2px 6px; border-radius: 2px; }
+    .pulse-dot-red { width: 6px; height: 6px; background: #ff2200; border-radius: 50%; animation: pulse-red 1s infinite; }
+    @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    
+    .live-tracking-text { font-size: 11px; color: #ff6600; letter-spacing: 1px; }
+
+    #globe-container { height: 380px; width: 420px; background: #000; position: relative; }
+
+    .threat-legend {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background: rgba(0,0,0,0.7);
+      padding: 6px;
+      border-radius: 4px;
+      z-index: 10;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 8px; color: #fff; margin-bottom: 2px; }
+    .ldot { width: 5px; height: 5px; border-radius: 50%; }
+
+    .live-feed-side {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 130px;
+      background: rgba(0,0,0,0.6);
+      padding: 8px;
+      z-index: 10;
+      font-size: 8px;
+      border: 1px solid rgba(255,102,0,0.1);
+    }
+    .event-item { margin-bottom: 6px; border-bottom: 1px solid rgba(255,102,0,0.05); padding-bottom: 3px; }
+    .event-time { color: #ff6600; }
+    .event-text { color: #aaa; line-height: 1.2; }
+
+    .ticker-container { background: #000; height: 26px; border-top: 1px solid #ff660022; display: flex; align-items: center; overflow: hidden; }
+    .ticker-content { display: inline-block; animation: ticker 40s linear infinite; font-size: 10px; color: #fff; white-space: nowrap; }
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+    .ticker-pill { background: #ff220033; border: 1px solid #ff2200; color: #ff2200; font-weight: bold; padding: 0 4px; border-radius: 2px; margin: 0 10px; }
+  </style>
+
+  <div class="tactical-panel-wrapper" id="tactical-wrapper">
+    <button class="toggle-arrow tactical-arrow" onclick="document.getElementById('tactical-wrapper').classList.toggle('collapsed')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+    <div class="conflict-widget">
+      <div class="widget-header">
+        <div class="header-left">
+          <span class="pill">CONFLICT</span>
+          <div class="pulse-dot-red"></div>
+          <span class="live-tracking-text">● TACTICAL COMMAND</span>
+        </div>
+      </div>
+      
+      <div id="mini-feed-container" style="height: 180px; position: relative;">
+        <div class="threat-legend">
+          <div class="legend-item"><div class="ldot" style="background:#ff2200"></div>CRITICAL</div>
+          <div class="legend-item"><div class="ldot" style="background:#cc3300"></div>HIGH</div>
+          <div class="legend-item"><div class="ldot" style="background:#4a5c00"></div>MODERATE</div>
+        </div>
+        <div class="live-feed-side" id="live-feed-globe">
+          <!-- Dyn. -->
+        </div>
+      </div>
+
+      <div class="ticker-container">
+        <div class="ticker-content">
+          <span class="ticker-pill">FLASH</span> SITREP: Israel reports intense activity in central sector. 
+          <span class="ticker-pill">FLASH</span> ANALYSIS: Supply lines stressed in northern corridor. 
+          <span class="ticker-pill">FLASH</span> INTEL: North Korean troop movements confirmed near border.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

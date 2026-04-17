@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrisisConnect | Explore Our World</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000000;
+            --text: #ffffff;
+            --secondary: #8a8a8a;
+            --accent: #ff6600;
+            --amber: #ffb340;
+            --red: #ff3b3b;
+            --globe-size: 700px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Progress Bar */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--accent);
+            width: 0%;
+            z-index: 2000;
+            transition: width 0.1s ease-out;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* Starfield */
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: twinkle var(--duration, 3s) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Globe Container */
+        .globe-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            transition: all 1.4s cubic-bezier(0.23, 1, 0.32, 1);
+            will-change: transform, opacity;
+            opacity: 0.85;
+        }
+
+        .globe {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            filter: drop-shadow(0 0 30px rgba(255, 102, 0, 0.3));
+        }
+
+        #globe-viz {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Navigation Dots */
+        .dot-nav {
+            position: fixed;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .dot-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 15px;
+            cursor: pointer;
+            group: hover;
+        }
+
+        .dot-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            background: rgba(255, 102, 0, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 102, 0, 0.2);
+        }
+
+        .dot-wrapper:hover .dot-label {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .dot-wrapper.active .dot {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            transform: scale(1.3);
+        }
+
+        .dot-wrapper.active .dot-label {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Sections */
+        section {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 10%;
+            position: relative;
+            z-index: 10;
+            background: transparent;
+        }
+
+        .content {
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s ease;
+        }
+
+        section.active .content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Hero */
+        .hero-title {
+            font-size: 80px;
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+
+        .hero-title span { color: var(--accent); text-shadow: 0 0 20px rgba(255, 102, 0, 0.4); }
+
+        .subtext {
+            font-size: 18px;
+            color: var(--secondary);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-filled {
+            background: var(--accent);
+            color: white;
+            border: none;
+        }
+
+        .btn-filled:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: white;
+        }
+
+        /* Innovation (Center) */
+        .section-innovation {
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Discovery (Feature Cards) */
+        .feature-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--accent);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--secondary);
+        }
+
+        /* Future (Center) */
+        .section-future {
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* Navbar */
+        .nav-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: linear-gradient(to bottom, rgba(10,10,15,0.8), transparent);
+            pointer-events: none;
+        }
+
+        .nav-header * { pointer-events: auto; }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .logo {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            color: white;
+            letter-spacing: 2px;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-nav {
+            padding: 8px 20px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+
+        /* Scripts for 3D Globe */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 50px; }
+            .dot-nav { display: none; }
+            .globe-container { --globe-size: 300px; }
+            section { padding: 0 5%; }
+        }
+    </style>
+    <!-- Globe Dependencies -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+    <script src="https://unpkg.com/globe.gl@2.32.0/dist/globe.gl.min.js"></script>
+</head>
+<body>
+
+    <div id="progress-bar"></div>
+    <div id="starfield"></div>
+
+    <header class="nav-header">
+        <a href="index.html?v=2.0" class="logo-wrap">
+            <div class="logo">CRISIS<span>CONNECT</span></div>
+        </a>
+        <div class="nav-actions" id="nav-actions">
+            <!-- Dynamic buttons injected via JS -->
+            <a href="login.html?v=2.0" class="btn btn-outline btn-nav">Operator Login</a>
+        </div>
+    </header>
+
+    <div class="globe-container" id="globe-wrap">
+        <div class="globe">
+            <div id="globe-viz"></div>
+        </div>
+    </div>
+
+    <nav class="dot-nav">
+        <div class="dot-wrapper active" onclick="scrollToSection(0)" data-section="0">
+            <span class="dot-label">Explore</span>
+            <div class="dot"></div>
+        </div>
+        <div class="dot-wrapper" onclick="scrollToSection(1)" data-section="1">
+            <span class="dot-label">Innovation</span>
+            <div class="dot"></div>
+        </div>
+        <div class="dot-wrapper" onclick="scrollToSection(2)" data-section="2">
+            <span class="dot-label">Discovery</span>
+            <div class="dot"></div>
+        </div>
+        <div class="dot-wrapper" onclick="scrollToSection(3)" data-section="3">
+            <span class="dot-label">Future</span>
+            <div class="dot"></div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="section-hero active" id="sec-0">
+        <div class="content">
+            <h1 class="hero-title">EXPLORE /<br><span>THE INTEL.</span></h1>
+            <p class="subtext">
+                Mission critical disaster intelligence. High-precision 3D global monitoring 
+                for tactical response units and emergency operators.
+            </p>
+            <div class="btn-group">
+                <button class="btn btn-filled" onclick="window.location.href='dashboard.html?v=3.0'">Command Center</button>
+                <a href="#" class="btn btn-outline" onclick="scrollToSection(1)">Specs</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Innovation Section -->
+    <section class="section-innovation" id="sec-1">
+        <div class="content">
+            <h2 class="hero-title">Connected<br><span>Worldwide.</span></h2>
+            <p class="subtext">
+                Our neural network monitors global activity 24/7, linking disparate data points 
+                into a unified tactical vision.
+            </p>
+            <a href="#" class="btn btn-outline" onclick="scrollToSection(2)">See Capabilities</a>
+        </div>
+    </section>
+
+    <!-- Discovery Section -->
+    <section class="section-discovery" id="sec-2">
+        <div class="content">
+            <h2 class="hero-title">Expanding /<br><span>Possibilities.</span></h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Tactical Precision</h3>
+                    <p>Real-time tracking with sub-meter accuracy in high-stress environments.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Predictive AI</h3>
+                    <p>Anticipate disaster paths before they materialize with neural modeling.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Global Response</h3>
+                    <p>Coordinated logistics bridge the gap between need and relief.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Future Section -->
+    <section class="section-future" id="sec-3">
+        <div class="content">
+            <h2 class="hero-title">Our Shared /<br><span>Tomorrow.</span></h2>
+            <p class="subtext">
+                Be part of the revolution in disaster resilience. The future of protection starts here.
+            </p>
+            <div class="btn-group" style="justify-content: center;">
+                <a href="login.html?v=2.0" class="btn btn-filled">Join the Movement</a>
+                <a href="dashboard.html?v=2.0" class="btn btn-outline">Explore More</a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Init Starfield
+        const starfield = document.getElementById('starfield');
+        const starCount = 100;
+
+        for (let i = 0; i < starCount; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.setProperty('--duration', `${2 + Math.random() * 4}s`);
+            starfield.appendChild(star);
+        }
+
+        // ── Globe Initialization ──
+        let worldGlobe;
+        const globeStates = [
+            { x: '25%', y: '0', scale: 1.0, lat: 20, lng: 30, alt: 2.2 },
+            { x: '0', y: '0', scale: 1.0, lat: 10, lng: 0, alt: 2.5 },
+            { x: '-25%', y: '0', scale: 1.0, lat: 40, lng: -40, alt: 2.2 },
+            { x: '0', y: '0', scale: 2.0, lat: 20, lng: 40, alt: 1.5 }
+        ];
+
+        function initGlobe() {
+            const container = document.getElementById('globe-viz');
+            worldGlobe = Globe()(container)
+                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+                .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+                .showAtmosphere(true)
+                .atmosphereColor('#ff4400')
+                .atmosphereAltitude(0.25)
+                .width(window.innerWidth)
+                .height(window.innerHeight)
+                .polygonAltitude(0.01)
+                .polygonSideColor(() => 'rgba(255, 68, 0, 0.1)')
+                .polygonStrokeColor(() => '#ff6600');
+
+            const tacticalData = {
+                'Russia': '#4a1100', 'China': '#802b00', 'United States': '#1a331a', 'Ukraine': '#ff3b3b', 'Brazil': '#1a331a'
+            };
+
+            fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
+                .then(res => res.json())
+                .then(worldData => {
+                    const countries = topojson.feature(worldData, worldData.objects.countries).features;
+                    worldGlobe.polygonsData(countries)
+                        .polygonCapColor(d => tacticalData[d.properties.NAME] || 'rgba(120, 50, 0, 0.1)');
+                });
+
+            const markers = [
+                { lat: 31.5, lng: 34.5, color: '#ff3b3b' },
+                { lat: 15.0, lng: 39.0, color: '#ffaa00' },
+                { lat: 48.0, lng: 31.0, color: '#ff0000' }
+            ];
+
+            worldGlobe.ringsData(markers)
+                .ringColor(d => d.color)
+                .ringMaxRadius(8)
+                .ringPropagationSpeed(3)
+                .ringRepeatPeriod(1000)
+                .controls().autoRotate = true;
+                worldGlobe.controls().autoRotateSpeed = 0.3;
+                worldGlobe.controls().enableZoom = false;
+
+            worldGlobe.pointOfView({ lat: 20, lng: 20, altitude: 2.5 });
+        }
+
+        const globeWrap = document.getElementById('globe-wrap');
+        const sections = document.querySelectorAll('section');
+        const dots = document.querySelectorAll('.dot-wrapper');
+        const progressBar = document.getElementById('progress-bar');
+
+        function handleScroll() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / scrollHeight) || 0;
+
+            progressBar.style.width = `${progress * 100}%`;
+
+            let activeIdx = 0;
+            sections.forEach((section, idx) => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+                    activeIdx = idx;
+                }
+            });
+
+            const state = globeStates[activeIdx];
+            if (state) {
+                globeWrap.style.transform = `translate(${state.x}, ${state.y}) scale(${state.scale})`;
+                if (worldGlobe) {
+                    worldGlobe.pointOfView({ lat: state.lat, lng: state.lng, altitude: state.alt }, 1500);
+                }
+            }
+
+            sections.forEach((s, i) => {
+                if (i === activeIdx) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+
+            dots.forEach((d, i) => {
+                if (i === activeIdx) d.classList.add('active');
+                else d.classList.remove('active');
+            });
+        }
+
+        function scrollToSection(idx) {
+            window.scrollTo({ top: window.innerHeight * idx, behavior: 'smooth' });
+        }
+
+        window.addEventListener('scroll', () => { requestAnimationFrame(handleScroll); });
+        window.addEventListener('resize', () => {
+            if (worldGlobe) worldGlobe.width(window.innerWidth).height(window.innerHeight);
+            resizeHandler();
+        });
+
+        function resizeHandler() {
+            if (window.innerWidth < 768) {
+                globeStates[0] = { x: '0', y: '20%', scale: 0.7, lat: 20, lng: 30, alt: 3.5 };
+                globeStates[1] = { x: '0', y: '0', scale: 0.7, lat: 10, lng: 0, alt: 3.5 };
+                globeStates[2] = { x: '0', y: '-20%', scale: 0.7, lat: 40, lng: -40, alt: 3.5 };
+                globeStates[3] = { x: '0', y: '20%', scale: 1.2, lat: 20, lng: 40, alt: 1.5 };
+            } else {
+                globeStates[0] = { x: '25%', y: '0', scale: 1.0, lat: 20, lng: 30, alt: 2.2 };
+                globeStates[1] = { x: '0', y: '0', scale: 1.0, lat: 10, lng: 0, alt: 2.5 };
+                globeStates[2] = { x: '-25%', y: '0', scale: 1.0, lat: 40, lng: -40, alt: 2.2 };
+                globeStates[3] = { x: '0', y: '-10%', scale: 2.0, lat: 20, lng: 40, alt: 1.2 };
+            }
+            handleScroll();
+        }
+
+        window.addEventListener('load', () => {
+            initGlobe();
+            resizeHandler();
+        });
+
+        function updateNavActions() {
+            const token = localStorage.getItem('cc_token') || sessionStorage.getItem('cc_token');
+            const navActions = document.getElementById('nav-actions');
+            if (token) {
+                navActions.innerHTML = `
+                    <a href="dashboard.html?v=2.0" class="btn btn-filled btn-nav">Go to Dashboard</a>
+                    <button onclick="ccLogout()" class="btn btn-outline btn-nav" style="border:none; padding: 0 10px; cursor:pointer;">⏏</button>
+                `;
+            } else {
+                navActions.innerHTML = `<a href="login.html?v=2.0" class="btn btn-outline btn-nav">Operator Login</a>`;
+            }
+        }
+        updateNavActions();
+    </script>
+    <script src="js/auth.js?v=2.0"></script>
+</body>
+</html>

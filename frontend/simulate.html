@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRISIS CONNECT | Simulation Engine</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="css/base.css?v=2.0">
+  <link rel="stylesheet" href="css/layout.css?v=2.0">
+  
+  <!-- Page Specific Styles -->
+  <link rel="stylesheet" href="css/simulate.css?v=2.0">
+</head>
+<body>
+  
+  <nav class="navbar">
+    <div class="nav-left">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="2,12 5,12 6.5,8 8,15 9.5,9 11,14 12,12 14,12 22,12"/>
+      </svg>
+      <h1><span class="brand-crisis">CRISIS</span><span class="brand-connect">CONNECT</span></h1>
+    </div>
+    <div class="nav-center">
+      <input type="text" class="search-input" placeholder="Search parameters...">
+    </div>
+    <div class="nav-right">
+      <div class="bell-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><div class="badge data-font">3</div></div>
+      <div class="live-status"><div class="live-dot"></div> ENGINE READY</div>
+    </div>
+    <div class="nav-right-extra">
+      <span class="mono" id="nav-user"></span>
+      <button onclick="ccLogout()">⏏ LOGOUT</button>
+    </div>
+  </nav>
+
+  <div class="app-shell">
+    
+    <aside class="sidebar">
+      <a href="dashboard.html?v=2.0" class="sidebar-btn" title="Dashboard">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+      </a>
+      <a href="disaster.html?v=2.0" class="sidebar-btn" title="Disasters">
+        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      </a>
+      <a href="displacement.html?v=2.0" class="sidebar-btn" title="Displacement">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      </a>
+      <a href="resources.html?v=2.0" class="sidebar-btn" title="Resources">
+        <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+      </a>
+      <a href="secondary-risk.html?v=2.0" class="sidebar-btn" title="Risk">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </a>
+      <a href="simulate.html?v=2.0" class="sidebar-btn active" title="Simulate">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+      </a>
+      <a href="analytics.html?v=2.0" class="sidebar-btn" title="Analytics">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      </a>
+      <a href="alerts.html?v=2.0" class="sidebar-btn" title="Alerts">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      </a>
+      <a href="emergency.html?v=2.0" class="sidebar-btn" title="Emergency" style="margin-top:auto; margin-bottom: 10px;">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+      </a>
+    </aside>
+
+    <div class="engine-panel">
+      <div class="panel-header">
+        <div class="scan-line"></div>
+        <h2><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg> DISASTER SIMULATION ENGINE</h2>
+      </div>
+
+      <div class="engine-form">
+        
+        <div class="form-group">
+          <label class="form-label">DISASTER TYPE</label>
+          <select class="sys-select" id="sim-type">
+            <option value="Earthquake">Earthquake</option>
+            <option value="Flood">Flood</option>
+            <option value="Wildfire">Wildfire</option>
+            <option value="Cyclone">Cyclone</option>
+            <option value="Tsunami">Tsunami</option>
+            <option value="Heatwave">Heatwave</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="sev-header">
+            <label class="form-label">SEVERITY LEVEL</label>
+            <div class="sev-val-large" id="sev-disp" style="color:var(--amber)">3</div>
+          </div>
+          <input type="range" class="sys-range" id="sev-slider" min="1" max="5" step="1" value="3" style="background: linear-gradient(to right, var(--amber) 50%, rgba(255,255,255,0.1) 50%);">
+          <div class="sev-label" id="sev-lbl" style="color:var(--amber)">MODERATE</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">SIMULATION DATE</label>
+          <input type="datetime-local" class="sys-input" id="sim-date">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">EPICENTER LOCATION</label>
+          <button class="btn-set-map" id="btn-set">
+            <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span>CLICK MAP TO SET</span>
+          </button>
+          <div class="coord-display" id="coord-disp">LAT: --.---- | LNG: --.----</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">POPULATION DENSITY</label>
+          <div class="pill-group" id="grp-density">
+            <div class="pill-btn" data-val="0.5">LOW</div>
+            <div class="pill-btn active" data-val="1.0">MEDIUM</div>
+            <div class="pill-btn" data-val="2.5">HIGH</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">TERRAIN TYPE</label>
+          <div class="pill-group terrain-group" id="grp-terrain">
+            <div class="pill-btn" data-val="1.8">COASTAL</div>
+            <div class="pill-btn active" data-val="1.2">URBAN</div>
+            <div class="pill-btn" data-val="1.0">RURAL</div>
+            <div class="pill-btn" data-val="0.7">MOUNTAIN</div>
+          </div>
+        </div>
+
+        <button class="btn-run" id="btn-run">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          RUN SIMULATION
+          <div class="btn-scan"></div>
+        </button>
+        
+        <div class="progress-bar" id="prog-wrap"><div class="progress-fill" id="prog-fill"></div></div>
+
+        <!-- Hidden Results -->
+        <div class="sim-results" id="sim-results">
+          <h3 class="res-head"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> SIMULATION COMPLETE</h3>
+          
+          <div class="res-grid">
+            <div class="res-item">
+              <span class="res-lbl">Predicted Affected</span>
+              <span class="res-val c-cyan" id="res-aff">--</span>
+            </div>
+            <div class="res-item">
+              <span class="res-lbl">Impact Radius</span>
+              <span class="res-val c-amber" id="res-rad">--</span>
+            </div>
+            <div class="res-item">
+              <span class="res-lbl">Estimated Displaced</span>
+              <span class="res-val c-amber" id="res-disp">--</span>
+            </div>
+            <div class="res-item">
+              <span class="res-lbl">Critical Response Window</span>
+              <span class="res-val c-red" id="res-win">--</span>
+            </div>
+          </div>
+          
+          <div class="res-fine" id="res-hist">Based on historical data from -- similar events.</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div id="map"></div>
+      
+      <!-- Compare Panel Overlay -->
+      <div class="compare-panel" id="comp-panel">
+        <div class="comp-header">
+          <span>THIS SCENARIO VS HISTORICAL AVERAGE</span>
+          <div class="comp-legend">
+            <div class="leg-item"><div class="leg-bx" style="background:var(--cyan)"></div> Simulated</div>
+            <div class="leg-item"><div class="leg-bx" style="background:rgba(160, 136, 112, 0.4)"></div> Historical</div>
+          </div>
+        </div>
+        
+        <div class="comp-grid">
+          
+          <div class="comp-col">
+            <span class="comp-lbl">Affected Count</span>
+            <div class="chart-dual">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar cb-hist" id="cb-h1"></div>
+                <div class="chart-bar cb-sim" id="cb-s1"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-col">
+            <span class="comp-lbl">Evacuated</span>
+            <div class="chart-dual">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar cb-hist" id="cb-h2"></div>
+                <div class="chart-bar cb-sim" id="cb-s2"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-col">
+            <span class="comp-lbl">Recovery Time (Months)</span>
+            <div class="chart-dual">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar cb-hist" id="cb-h3"></div>
+                <div class="chart-bar cb-sim" id="cb-s3"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-col">
+            <span class="comp-lbl">Economic Damage</span>
+            <div class="chart-dual">
+              <div class="chart-bar-wrap">
+                <div class="chart-bar cb-hist" id="cb-h4"></div>
+                <div class="chart-bar cb-sim" id="cb-s4"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div>LAST UPDATED: <span id="timestamp" class="data-font"></span></div>
+    <div>CRISISCONNECT v1.0 | VIEW : PREDICTIVE SIMULATOR</div>
+  </div>
+
+  <!-- Auth Script -->
+  <script src="js/auth.js?v=2.0"></script>
+
+  <!-- ML Backend API config -->
+  <script src="js/api.js"></script>
+  <!-- Page Logic -->
+  <script src="js/simulate.js?v=2.0"></script>
+</body>
+</html>

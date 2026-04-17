@@ -1,0 +1,370 @@
+/* CrisisConnect Login Styles */
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ── Animated Background Canvas ── */
+#bg-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ── Scan-line overlay ── */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 85, 0, 0.012) 2px,
+        rgba(255, 85, 0, 0.012) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ── Login-Specific Layout overrides ── */
+.navbar {
+    background: rgba(14, 9, 5, 0.85);
+    backdrop-filter: blur(12px);
+    position: relative;
+}
+
+.nav-brand { text-decoration: none; }
+
+.live-pill {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Share Tech Mono'; font-size: 11px;
+    color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+}
+.live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: blink 2s ease-in-out infinite;
+}
+
+/* ── Main ── */
+.main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    position: relative;
+    z-index: 10;
+}
+
+/* ── Login Card ── */
+.login-card {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(22, 12, 6, 0.92);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 48px 40px 40px;
+    position: relative;
+    backdrop-filter: blur(20px);
+    box-shadow:
+        0 0 0 1px rgba(255, 85, 0, 0.08),
+        0 8px 60px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(255, 85, 0, 0.06);
+    animation: cardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 40px; right: 40px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(255, 85, 0, 0.5);
+}
+
+/* ── Logo Section ── */
+.card-logo {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.logo-icon {
+    width: 52px; height: 52px;
+    background: rgba(255, 85, 0, 0.08);
+    border: 1px solid rgba(255, 85, 0, 0.25);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+    box-shadow: 0 0 20px rgba(255, 85, 0, 0.15);
+}
+
+.logo-icon svg { width: 28px; height: 28px; color: var(--cyan); }
+
+.card-logo h2 {
+    font-size: 26px;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.card-logo .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Share Tech Mono';
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.status-line {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 12px;
+    font-family: 'Share Tech Mono'; font-size: 10px; color: var(--muted);
+    letter-spacing: 1px; text-transform: uppercase;
+}
+
+.status-dot-ok  { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-dot-red { width: 6px; height: 6px; border-radius: 50%; background: var(--red); box-shadow: 0 0 6px var(--red); animation: blink 1.2s ease-in-out infinite; }
+
+/* ── Divider ── */
+.divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 -40px 28px;
+}
+
+/* ── Form ── */
+.form-group {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-bottom: 18px;
+}
+
+label {
+    font-family: 'Rajdhani'; font-size: 12px; font-weight: 700;
+    color: var(--muted); letter-spacing: 2px; text-transform: uppercase;
+}
+
+.input-wrap { position: relative; }
+.input-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); transition: color 0.2s;
+    pointer-events: none;
+}
+.input-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.form-input {
+    width: 100%;
+    background: rgba(10, 6, 3, 0.8);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: 'DM Sans'; font-size: 14px;
+    padding: 10px 14px 10px 38px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input::placeholder { color: rgba(160, 136, 112, 0.5); }
+
+.form-input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 2px rgba(255, 85, 0, 0.12), inset 0 0 8px rgba(255, 85, 0, 0.04);
+}
+
+.form-input:focus + .input-icon,
+.input-wrap:focus-within .input-icon { color: var(--cyan); }
+
+/* Password toggle */
+.pw-toggle {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); padding: 0; transition: color 0.2s;
+}
+.pw-toggle:hover { color: var(--text); }
+.pw-toggle svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Options Row ── */
+.options-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.checkbox-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.custom-cb {
+    width: 16px; height: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; cursor: pointer; transition: all 0.15s;
+}
+.custom-cb svg { display: none; width: 11px; height: 11px; stroke: var(--bg); fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+#remember-input { display: none; }
+#remember-input:checked ~ label .custom-cb {
+    background: var(--cyan);
+    border-color: var(--cyan);
+    box-shadow: 0 0 8px rgba(255, 85, 0, 0.3);
+}
+#remember-input:checked ~ label .custom-cb svg { display: block; }
+
+.cb-label-text { font-size: 13px; color: var(--muted); user-select: none; }
+
+.forgot-link {
+    font-size: 12px; color: var(--cyan); text-decoration: none;
+    font-weight: 600; letter-spacing: 0.5px;
+    transition: opacity 0.2s;
+}
+.forgot-link:hover { opacity: 0.7; }
+
+/* ── Error Banner ── */
+.error-banner {
+    background: rgba(255, 59, 59, 0.1);
+    border: 1px solid rgba(255, 59, 59, 0.4);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: var(--red);
+    display: none;
+    align-items: center;
+    gap: 10px;
+}
+.error-banner.show { display: flex; animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+.error-banner svg { flex-shrink: 0; width: 16px; height: 16px; fill: none; stroke: var(--red); stroke-width: 2; stroke-linecap: round; }
+
+@keyframes shake {
+    10%, 90% { transform: translateX(-2px); }
+    20%, 80% { transform: translateX(4px); }
+    30%, 50%, 70% { transform: translateX(-4px); }
+    40%, 60% { transform: translateX(4px); }
+}
+
+/* ── Success Banner ── */
+.success-banner {
+    background: rgba(0, 230, 118, 0.1);
+    border: 1px solid rgba(0, 230, 118, 0.35);
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: var(--green);
+    display: none;
+    align-items: center;
+    gap: 10px;
+}
+.success-banner.show { display: flex; }
+.success-banner svg { flex-shrink: 0; width: 16px; height: 16px; fill: none; stroke: var(--green); stroke-width: 2; stroke-linecap: round; }
+
+/* ── Login Button ── */
+.btn-login {
+    width: 100%;
+    background: var(--cyan);
+    border: none;
+    border-radius: 4px;
+    color: var(--bg);
+    font-family: 'Rajdhani'; font-size: 16px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    padding: 13px 24px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    box-shadow: 0 0 20px rgba(255, 85, 0, 0.25);
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-login::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+}
+
+.btn-login:hover::before { transform: translateX(100%); }
+.btn-login:hover { background: #FF7733; box-shadow: 0 0 32px rgba(255, 85, 0, 0.5); transform: translateY(-1px); }
+.btn-login:active { transform: translateY(0); }
+.btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-login .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(10,6,3,0.4);
+    border-top-color: var(--bg);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-login.loading .btn-label { display: none; }
+.btn-login.loading .spinner { display: block; }
+
+/* ── Demo Button ── */
+.btn-demo {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+    font-family: 'Rajdhani'; font-size: 13px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 10px 24px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s;
+    margin-bottom: 24px;
+}
+
+.btn-demo:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+    box-shadow: 0 0 12px rgba(255, 179, 64, 0.15);
+    background: rgba(255, 179, 64, 0.05);
+}
+
+.btn-demo svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Footer Note ── */
+.card-footer {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(160, 136, 112, 0.5);
+    font-family: 'Share Tech Mono';
+    letter-spacing: 0.5px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    margin-top: 4px;
+    line-height: 1.7;
+}
+
+/* ── Status Bar ── */
+.status-bar {
+    height: 30px; flex-shrink: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 20px;
+    font-size: 11px; font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1px; text-transform: uppercase;
+    z-index: 100; position: relative;
+}
+
+/* ── Responsive ── */
+@media (max-width: 500px) {
+    .login-card { padding: 36px 24px 28px; }
+    .divider { margin: 0 -24px 24px; }
+}
