@@ -1,4 +1,4 @@
-import math
+import math  # Required for math.radians and math.cos/sin functions
 
 # ==============================
 # DRIFT CALCULATIONS (NEW)

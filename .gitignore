@@ -1,19 +1,15 @@
 # Environments
 .env
+backend_repo/
 .venv/
 env/
 venv/
 ENV/
 
 # Data and Models
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-data/external/*
-!data/external/.gitkeep
-models/*.pkl
-
+data/raw/GEDEvent_v25_1.csv
+models/
+!models/*.pkl
 # Python Cache
 __pycache__/
 *.py[cod]
