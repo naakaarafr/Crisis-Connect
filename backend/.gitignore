@@ -1,0 +1,7 @@
+venv/
+env/
+__pycache__/
+*.pyc
+*.db
+ml_repo_clone/
+.gemini/
