@@ -1,0 +1,5 @@
+xgboost
+pandas
+scikit-learn
+flask
+pytest
