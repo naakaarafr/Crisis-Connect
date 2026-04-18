@@ -19,6 +19,23 @@ const sevMap = {
   5: { l: 'CATASTROPHIC', c: 'var(--red)' }
 };
 
+const HISTORICAL_DATA = {
+  earthquake: { aff: 800000, disp: 200000, rec: 24, dmg: 85 },
+  flood: { aff: 1200000, disp: 400000, rec: 12, dmg: 40 },
+  wildfire: { aff: 150000, disp: 80000, rec: 18, dmg: 60 },
+  cyclone: { aff: 2000000, disp: 900000, rec: 36, dmg: 95 },
+  tsunami: { aff: 2500000, disp: 1200000, rec: 48, dmg: 120 },
+  heatwave: { aff: 5000000, disp: 50000, rec: 3, dmg: 15 },
+  default: { aff: 500000, disp: 100000, rec: 12, dmg: 30 }
+};
+
+const NORM_MAX = {
+  aff: 5000000,
+  disp: 2000000,
+  rec: 60,
+  dmg: 150
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
     initControls();
@@ -148,6 +165,7 @@ async function runSimulation() {
     const respWindow = Math.max(6, 72 - (sev * 12));
 
     setTimeout(() => { pf.style.width = '60%'; }, 50);
+    const dynamicCoords = generateDynamicCoordinates(epicLat, epicLng, impactRadiusKm, 20);
 
     // ── Call ML Backend ──────────────────────────────────────
     let mlResult = null;
@@ -156,10 +174,10 @@ async function runSimulation() {
     if (backendOk) {
         try {
             const payload = {
-                severity_score: sev * density * 1.5, // Standardized 0-10 range or similar
-                risk_index: sev * 1.4,
-                population_density: Math.floor(density * 600),
-                infrastructure_index: Math.max(0.1, 1 - (sev * 0.15)),
+                severity_score: sev * 2.0, // Scale to 2.0-10.0
+                risk_index: sev + (density * 1.5),
+                population_density: Math.floor(density * 10000), 
+                infrastructure_index: Math.max(0.1, 1 - (sev * 0.12) - (terrain * 0.05)),
                 lat: epicLat,
                 lon: epicLng,
                 wind_speed: 10 + sev * 3,
@@ -167,13 +185,7 @@ async function runSimulation() {
                 current_speed: 1.5,
                 current_dir: 90,
                 time_hours: 24,
-                // Geospatial Extras
-                coordinates: [
-                    [epicLat, epicLng],
-                    [epicLat + 0.3, epicLng + 0.3],
-                    [epicLat - 0.3, epicLng + 0.3],
-                    [epicLat, epicLng - 0.4],
-                ],
+                coordinates: dynamicCoords,
                 source: 0,
                 target: 1,
                 displaced_people: displaced,
@@ -192,14 +204,28 @@ async function runSimulation() {
         btnRun.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> RUN SIMULATION';
         pw.style.display = 'none';
 
-        // Use ML result if available, otherwise fall back to client-side math
-        const finalDisplaced = mlResult ? Math.round(mlResult.displacement || displaced) : displaced;
-        const riskCategory = mlResult ? (mlResult.risk && mlResult.risk.category ? mlResult.risk.category.toUpperCase() : 'MODERATE') : 'MODERATE';
-        const mlBadge = mlResult ? ` · ML: ${riskCategory}` : ' · (offline)';
-
         visualizeSimulation(impactRadiusKm, baseAffected, mlResult);
-        showResults(baseAffected, impactRadiusKm, finalDisplaced, respWindow, sev, density, mlBadge);
+        showResults(baseAffected, impactRadiusKm, displaced, respWindow, sev, density, disasterType, mlResult);
     }, 2100);
+}
+
+/**
+ * Generates a randomized cloud of coordinate points within an impact radius
+ * for the DBSCAN hotspot model to process.
+ */
+function generateDynamicCoordinates(lat, lng, radiusKm, count) {
+    const coords = [[lat, lng]]; // Always include epicentre
+    const radiusDeg = radiusKm / 111.32; // Rough conversion for degrees
+
+    for (let i = 0; i < count; i++) {
+        // Use Box-Muller or simple random for dispersion
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.sqrt(Math.random()) * radiusDeg; 
+        const pLat = lat + dist * Math.cos(angle);
+        const pLng = lng + dist * Math.sin(angle);
+        coords.push([pLat, pLng]);
+    }
+    return coords;
 }
 
 
@@ -291,28 +317,54 @@ function visualizeSimulation(radiusKm, affected, mlData = null) {
     }, 16);
 }
 
-function showResults(aff, rad, disp, win, sev, density, mlBadge) {
-    document.getElementById('res-aff').innerText = aff.toLocaleString();
+function showResults(aff, rad, disp, win, sev, density, type, mlResult) {
+    const badge = mlResult ? ` · ML: ${ (mlResult.risk_level || mlResult.risk.level || 'MODERATE').toUpperCase() }` : ' · (offline)';
+    
+    // ── Update Grid Values from ML Result if available ──
+    const finalAffected = mlResult ? Math.round(aff * (0.8 + (mlResult.risk_score / 150))) : aff;
+    const finalDisplaced = mlResult ? Math.round(mlResult.displacement) : disp;
+    const finalWindow = mlResult ? Math.max(4, Math.round(72 - (mlResult.risk_score * 0.6))) : win;
+
+    document.getElementById('res-aff').innerText = finalAffected.toLocaleString();
     document.getElementById('res-rad').innerText = rad + ' km';
-    document.getElementById('res-disp').innerText = disp.toLocaleString();
-    document.getElementById('res-win').innerText = win + ' HRS';
-    const badge = mlBadge || '';
+    document.getElementById('res-disp').innerText = finalDisplaced.toLocaleString();
+    document.getElementById('res-win').innerText = finalWindow + ' HRS';
+    
     document.getElementById('res-hist').innerText = `Based on ${Math.floor(Math.random()*40+10)} historical events${badge}.`;
     document.getElementById('sim-results').classList.add('show');
 
-    const hBase = aff * (0.6 + Math.random()*0.8);
-    document.getElementById('cb-s1').style.width = '100%';
-    document.getElementById('cb-h1').style.width = Math.min(100, (hBase/aff)*100) + '%';
+    // ── Comparison Logic: Simulated vs Historical ──────────────────────────
     
-    const hDisp = disp * (0.5 + Math.random()*0.9);
-    document.getElementById('cb-s2').style.width = '100%';
-    document.getElementById('cb-h2').style.width = Math.min(100, (hDisp/disp)*100) + '%';
+    const hist = HISTORICAL_DATA[type] || HISTORICAL_DATA.default;
+    
+    // Use ML risk score specifically for recovery and damage weighting if available
+    const mlScore = mlResult && mlResult.risk_score ? mlResult.risk_score : (sev * density * 6); // 0-100 logic
+    
+    // 1. Affected Count
+    const s1Width = Math.min(100, (aff / NORM_MAX.aff) * 100);
+    const h1Width = Math.min(100, (hist.aff / NORM_MAX.aff) * 100);
+    document.getElementById('cb-s1').style.width = s1Width + '%';
+    document.getElementById('cb-h1').style.width = h1Width + '%';
+    
+    // 2. Evacuated/Displaced
+    const s2Width = Math.min(100, (disp / NORM_MAX.disp) * 100);
+    const h2Width = Math.min(100, (hist.disp / NORM_MAX.disp) * 100);
+    document.getElementById('cb-s2').style.width = s2Width + '%';
+    document.getElementById('cb-h2').style.width = h2Width + '%';
 
-    document.getElementById('cb-s3').style.width = (sev * 15) + '%';
-    document.getElementById('cb-h3').style.width = (sev * 12) + '%';
+    // 3. Recovery Time
+    const sRec = (mlScore / 100) * NORM_MAX.rec;
+    const s3Width = Math.min(100, (sRec / NORM_MAX.rec) * 100);
+    const h3Width = Math.min(100, (hist.rec / NORM_MAX.rec) * 100);
+    document.getElementById('cb-s3').style.width = s3Width + '%';
+    document.getElementById('cb-h3').style.width = h3Width + '%';
     
-    document.getElementById('cb-s4').style.width = (sev * Math.min(density, 2.0) * 15) + '%';
-    document.getElementById('cb-h4').style.width = (sev * 1.5 * 10) + '%';
+    // 4. Economic Damage
+    const sDmg = (mlScore / 100) * NORM_MAX.dmg;
+    const s4Width = Math.min(100, (sDmg / NORM_MAX.dmg) * 100);
+    const h4Width = Math.min(100, (hist.dmg / NORM_MAX.dmg) * 100);
+    document.getElementById('cb-s4').style.width = s4Width + '%';
+    document.getElementById('cb-h4').style.width = h4Width + '%';
 
     setTimeout(() => { document.getElementById('comp-panel').classList.add('show'); }, 500);
 }

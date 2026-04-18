@@ -87,6 +87,8 @@ async function fetchAndRenderAll(isDispatch) {
     let mlDisplacement = null;
     let mlHotspots   = [];
 
+    let osmFacilities = [];
+
     const backendOk = typeof CRISIS_API !== 'undefined' && await CRISIS_API.isAvailable().catch(() => false);
     
     if (backendOk) {
@@ -103,8 +105,8 @@ async function fetchAndRenderAll(isDispatch) {
             severity: d.severity,
         };
 
-        // Run all three ML calls in parallel for speed
-        const [riskRes, dispRes, spotsRes] = await Promise.allSettled([
+        // Run all ML calls in parallel for speed *and* external OpenStreetMap API
+        const [riskRes, dispRes, spotsRes, osmRes] = await Promise.allSettled([
             CRISIS_API.post(CRISIS_API.endpoints.predictRisk, basePayload),
             CRISIS_API.post(CRISIS_API.endpoints.predict,     basePayload),
             CRISIS_API.post(CRISIS_API.endpoints.predictSpots, {
@@ -117,18 +119,20 @@ async function fetchAndRenderAll(isDispatch) {
                     [d.lat - 0.5,  d.lng - 0.2 ],
                     [d.lat + 0.3,  d.lng - 0.5 ],
                 ]
-            })
+            }),
+            fetchRealWorldFacilities(d.lat, d.lng, 60)
         ]);
 
         if (riskRes.status === 'fulfilled')  mlRisk        = riskRes.value;
         if (dispRes.status === 'fulfilled')  mlDisplacement = dispRes.value.displacement;
         if (spotsRes.status === 'fulfilled') mlHotspots    = spotsRes.value.hotspots || [];
+        if (osmRes.status === 'fulfilled')   osmFacilities = osmRes.value;
 
         if (riskRes.status === 'rejected')
             console.warn('[Resources] /predict-risk failed:', riskRes.reason);
     }
 
-    const data = mapHotspotsToResources(d, mlRisk, mlHotspots, mlDisplacement, isDispatch);
+    const data = mapHotspotsToResources(d, mlRisk, mlHotspots, mlDisplacement, osmFacilities, isDispatch);
     initMap(d, data.shelters);
     renderUI(data.resourceOrder, data.shelters);
 
@@ -145,7 +149,30 @@ function startRealtimePoll() {
     }, 25000); // Poll backend specifically for ML updates every 25 seconds
 }
 
-function mapHotspotsToResources(d, mlRisk, mlHotspots, mlDisplacement, isDispatch) {
+/**
+ * Dynamically fetches real hospitals and clinics from OpenStreetMap via Overpass API.
+ */
+async function fetchRealWorldFacilities(lat, lng, radiusKm = 50) {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        // Query nodes tagged as hospital, clinic, doctors, police, fire_station, community_centre
+        const url = `https://overpass-api.de/api/interpreter?data=[out:json];node(around:${Math.floor(radiusKm*1000)},${lat},${lng})["amenity"~"hospital|clinic|doctors|police|fire_station|community_centre"];out 100;`;
+        
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.elements || []).filter(e => e.lat && e.lon);
+    } catch(err) {
+        console.warn("[CrisisConnect] Overpass API fetch failed/timed out:", err);
+        return [];
+    }
+}
+
+function mapHotspotsToResources(d, mlRisk, mlHotspots, mlDisplacement, osmFacilities, isDispatch) {
     // Extract risk cards — /predict-risk wraps them under .risk.cards
     const riskPayload = mlRisk ? (mlRisk.risk || mlRisk) : {};
     const mlRiskCards = riskPayload.cards || [];
@@ -155,38 +182,79 @@ function mapHotspotsToResources(d, mlRisk, mlHotspots, mlDisplacement, isDispatc
     let totalCap = 0, totalOcc = 0;
     const shelters = [];
 
-    // Use ML Hotspots if available, otherwise heuristic fallback
+    // Use OSM Facilities if available, else ML Hotspots, else heuristic fallback
+    const useOsm = osmFacilities && osmFacilities.length > 0;
     const useMl = mlHotspots && mlHotspots.length > 0;
-    const loopCount = useMl ? mlHotspots.length : 12;
+    
+    // Always aim for at least 25 local response centers for visual density
+    const targetCount = Math.max(25, osmFacilities ? osmFacilities.length : 0);
 
-    for(let i=0; i<loopCount; i++) {
-      let lat, lng, capacityBase;
-      if (useMl) {
-          const h = mlHotspots[i];
-          lat = h.lat;
-          lng = h.lon || h.lng;
-          capacityBase = h.population_estimate || (displaced / loopCount);
-      } else {
-          const angle = (i * 30) * Math.PI / 180;
-          const dist = 0.5 + (i * 0.1);
+    for(let i=0; i<targetCount; i++) {
+      let lat, lng, capacityBase, name, type;
+      
+      if (useOsm && i < osmFacilities.length) {
+          const node = osmFacilities[i];
+          lat = node.lat;
+          lng = node.lon;
+          const rawName = node.tags && (node.tags.name || node.tags["name:en"] || node.tags["name:el"]);
+          name = rawName ? (rawName.length > 35 ? rawName.substring(0, 35) + "..." : rawName) : "Unnamed Response Center";
+          
+          if (node.tags && node.tags.amenity) {
+              const am = node.tags.amenity;
+              if (am === "clinic" || am === "doctors") type = "Medical Clinic";
+              else if (am === "police") type = "Police Station / Sec-Hub";
+              else if (am === "fire_station") type = "Fire Station / Rescue-Hub";
+              else if (am === "community_centre") type = "Community Relief Shelter";
+              else type = "Hospital / Main Medical";
+          } else {
+              type = "Hospital / Main Medical";
+          }
+          capacityBase = displaced / targetCount;
+      } 
+      else if (useMl && i < mlHotspots.length * 3) {
+          // If OSM ran out, fallback to ML hotspots (spread them slightly so they don't overlap)
+          const h = mlHotspots[i % mlHotspots.length];
+          const variance_lat = (Math.random() - 0.5) * 0.05;
+          const variance_lng = (Math.random() - 0.5) * 0.05;
+          lat = h.lat + variance_lat;
+          lng = (h.lon || h.lng) + variance_lng;
+          capacityBase = (h.population_estimate || displaced) / targetCount;
+          name = `Field Station ${String.fromCharCode(65 + (i%26))}-${100+i}`;
+          type = types[i % 3];
+      } 
+      else {
+          // Absolute fallback if everything else ran out, geometric dispersion
+          const angle = (i * 45 + (Math.random() * 20)) * Math.PI / 180;
+          const dist = 0.05 + (i * 0.03) + Math.random() * 0.02; // keeping it closer to center
           lat = d.lat + Math.cos(angle) * dist;
           lng = d.lng + Math.sin(angle) * dist;
-          capacityBase = displaced / loopCount;
+          capacityBase = displaced / targetCount;
+          name = `Field Station ${String.fromCharCode(65 + (i%26))}-${100+i}`;
+          type = types[i % 3];
       }
 
       const variance = Math.random() * 0.1 - 0.05;
       const boost = isDispatch ? 0.3 : 0;
       
       const cap = Math.floor(capacityBase * (1.2 + boost)); 
-      const occBase = useMl ? (mlHotspots[i].intensity || 0.8) : (0.6 + (i%5)*0.1);
+      
+      // Calculate occupancy base
+      let occBase = 0.6 + (i%5)*0.1;
+      if (useOsm && i < osmFacilities.length) {
+          occBase = 0.7 + variance; // OS facilities usually busy during disasters
+      } else if (useMl && mlHotspots.length > 0) {
+          occBase = mlHotspots[i % mlHotspots.length].intensity || 0.8;
+      }
+      
       const occ = Math.floor(capacityBase * (occBase + variance));
+
       
       totalCap += cap;
       totalOcc += Math.min(occ, cap);
       
       shelters.push({
-        name: `Relief Zone ${String.fromCharCode(65 + (i%26))}-${100+i}`,
-        type: types[i % 3],
+        name: name,
+        type: type,
         lat, lng,
         cap, occ: Math.min(occ, cap),
         needs: { 
@@ -294,7 +362,20 @@ function renderUI(resourceOrder, shelters) {
 }
 
 function initMap(d, shelters) {
-    map = L.map('map', { zoomControl: false, attributionControl: false }).setView([d.lat, d.lng], 3);
+    if (map !== undefined && map !== null) {
+        try {
+            map.off();
+            map.remove();
+        } catch(e) {}
+        map = null;
+    }
+    const mapEl = document.getElementById('map');
+    if (mapEl) mapEl.innerHTML = ''; // Force clear DOM residue
+
+    const originLat = parseFloat(d.lat) || 0;
+    const originLng = parseFloat(d.lng) || 0;
+
+    map = L.map('map', { zoomControl: false, attributionControl: false }).setView([originLat, originLng], 3);
     L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
     
@@ -324,9 +405,38 @@ function initMap(d, shelters) {
           <div class="need-row"><div class="need-left"><div class="sys-sq ${nw.cls}"></div> <span class="need-lbl">Water</span></div><span class="need-status">${nw.text}</span></div>
           <div class="need-row"><div class="need-left"><div class="sys-sq ${nm.cls}"></div> <span class="need-lbl">Medical</span></div><span class="need-status">${nm.text}</span></div>
         </div>`).addTo(map);
-      bounds.push([s.lat, s.lng]);
+        
+      // Do not include global hubs in the bounding box to prevent extreme zooming out
+      if (s.type !== "Global Logistics Hub") {
+          bounds.push([s.lat, s.lng]);
+      }
     });
-    if(bounds.length > 0) map.fitBounds(bounds, { padding: [50, 50] });
+    
+    // Zoom tightly to the local disaster area
+    if(bounds.length > 0) {
+        // Enforce a minimum bounding box size to prevent Leaflet from zooming out to whole world
+        // if only 1 node is in bounds (which causes zero-sized bounds)
+        let minLat = bounds[0][0], maxLat = bounds[0][0];
+        let minLng = bounds[0][1], maxLng = bounds[0][1];
+        bounds.forEach(b => {
+             if (b[0] < minLat) minLat = b[0];
+             if (b[0] > maxLat) maxLat = b[0];
+             if (b[1] < minLng) minLng = b[1];
+             if (b[1] > maxLng) maxLng = b[1];
+        });
+        
+        let localBounds = bounds;
+        if (Math.abs(maxLat - minLat) < 0.01 && Math.abs(maxLng - minLng) < 0.01) {
+             // Create an artificial box of ~10km radius around the points if they are too tight
+             const padDeg = 0.05;
+             localBounds = [
+                 [minLat - padDeg, minLng - padDeg],
+                 [maxLat + padDeg, maxLng + padDeg]
+             ];
+        }
+        
+        map.fitBounds(localBounds, { padding: [50, 50], maxZoom: 14 });
+    }
 }
 
 function getColorClass(pct) {
