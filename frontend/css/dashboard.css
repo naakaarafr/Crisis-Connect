@@ -76,6 +76,80 @@
 .val-amber { color: var(--amber); }
 .val-red { color: var(--red); }
 
+/* ML Specific Tweak */
+.ml-specific .stat-value { font-size: 28px; }
+.loading-bar-container { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+.loading-bar-progress { height: 100%; background: var(--cyan); width: 40%; animation: loadSlide 1.5s infinite; }
+@keyframes loadSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+
+@keyframes flow { to { stroke-dashoffset: -200; } }
+.route-animate-flow {
+    animation: flow 5s linear infinite;
+}
+
+/* Demo & Scanning HUD */
+.scanning-hud {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 300px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--cyan);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 0 50px rgba(0, 255, 255, 0.2);
+    clip-path: polygon(10% 0%, 90% 0%, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0% 90%, 0% 10%);
+}
+
+.scan-line {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--cyan);
+    box-shadow: 0 0 10px var(--cyan);
+    animation: scanMove 3s linear infinite;
+}
+
+@keyframes scanMove {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+
+.scan-label {
+    color: var(--cyan);
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 5px var(--cyan);
+}
+
+.scan-coords {
+    color: var(--amber);
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+.btn-danger {
+    border-color: #ff3b3b !important;
+    background: rgba(255, 59, 59, 0.1) !important;
+    color: #ff3b3b !important;
+    transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+    background: #ff3b3b !important;
+    color: #fff !important;
+    box-shadow: 0 0 15px rgba(255, 59, 59, 0.5);
+}
+
 @keyframes flicker {
     0% { opacity: 0; }
     10% { opacity: 1; }

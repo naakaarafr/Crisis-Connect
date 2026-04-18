@@ -22,12 +22,13 @@ def fetch_nasa_disasters():
     standard_data = []
     
     try:
-        # Fetch data, timeout after 10s
-        response = requests.get(f"{url}?status=open&limit=20", timeout=10)
+        # Fetch data, timeout after 15s, increased limit to 200 for worldwide coverage
+        response = requests.get(f"{url}?status=open&limit=200", timeout=15)
         response.raise_for_status()
         raw_events = response.json().get("events", [])
         
         for event in raw_events:
+            event_name = event.get("title", "NASA Alert")
             categories = event.get("categories", [])
             event_type = categories[0].get("title", "Unknown") if categories else "Unknown"
             
@@ -47,9 +48,12 @@ def fetch_nasa_disasters():
             if event_type.lower() != "unknown" and (lat != 0.0 or lon != 0.0):
                 normalized_type = normalize_disaster_type(event_type)
                 standard_data.append({
+                    "name": event_name,
                     "type": normalized_type,
                     "severity": int(severity),
-                    "location": [float(lat), float(lon)]
+                    "affected": 5000 * severity, # Heuristic affected based on category
+                    "location": [float(lat), float(lon)],
+                    "hub": "NASA EONET"
                 })
                 
     except Exception as e:

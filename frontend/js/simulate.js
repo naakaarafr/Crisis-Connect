@@ -59,6 +59,15 @@ function initControls() {
     // Set Date
     document.getElementById('sim-date').value = new Date().toISOString().slice(0,16);
 
+    // Initialize Searchable Dropdown
+    if (typeof TomSelect !== 'undefined') {
+        new TomSelect('#sim-type', {
+            create: false,
+            sortField: { field: "text", direction: "asc" },
+            dropdownParent: 'body'
+        });
+    }
+
     // Set Button
     document.getElementById('btn-set').addEventListener('click', () => {
       isPlacementMode = !isPlacementMode;
@@ -147,7 +156,7 @@ async function runSimulation() {
     if (backendOk) {
         try {
             const payload = {
-                severity_score: sev * density * 1500,
+                severity_score: sev * density * 1.5, // Standardized 0-10 range or similar
                 risk_index: sev * 1.4,
                 population_density: Math.floor(density * 600),
                 infrastructure_index: Math.max(0.1, 1 - (sev * 0.15)),
@@ -158,6 +167,7 @@ async function runSimulation() {
                 current_speed: 1.5,
                 current_dir: 90,
                 time_hours: 24,
+                // Geospatial Extras
                 coordinates: [
                     [epicLat, epicLng],
                     [epicLat + 0.3, epicLng + 0.3],
@@ -167,8 +177,7 @@ async function runSimulation() {
                 source: 0,
                 target: 1,
                 displaced_people: displaced,
-                severity: sev * 2.0,
-                disaster_type: disasterType,
+                disaster_type: disasterType
             };
             mlResult = await CRISIS_API.runFullPipeline(payload);
         } catch(e) {
@@ -194,39 +203,91 @@ async function runSimulation() {
 }
 
 
-function visualizeSimulation(radiusKm, affected) {
-    const c1 = L.circle([epicLat, epicLng], {
-      color: '#ff3b3b', fillColor: '#ff3b3b', fillOpacity: 0.2, weight: 2, radius: 1000
+function visualizeSimulation(radiusKm, affected, mlData = null) {
+    const epicCircle = L.circle([epicLat, epicLng], {
+      color: '#ff3b3b', fillColor: '#ff3b3b', fillOpacity: 0.2, weight: 2, radius: 100
     }).addTo(drawnLayers);
 
     const targetRadius = radiusKm * 1000;
-    let r = 1000;
-    const animStep = targetRadius / 30;
+    let r = 100;
+    const animStep = targetRadius / 40;
+    
+    // Epicenter expansion animation
     const intv = setInterval(() => {
       r += animStep;
       if(r >= targetRadius) {
         r = targetRadius;
         clearInterval(intv);
-        L.circle([epicLat, epicLng], { color: 'transparent', fillColor: '#ffb340', fillOpacity: 0.1, radius: targetRadius * 1.5 }).addTo(drawnLayers);
         
-        const pts = [];
-        const pCount = Math.floor(affected / 5000) + 10;
-        for(let i=0; i<pCount; i++) {
-          const ang = Math.random() * Math.PI * 2;
-          const dist = Math.random() * (radiusKm / 111);
-          pts.push([epicLat + dist*Math.cos(ang), epicLng + dist*Math.sin(ang), Math.random()]);
-        }
-        heatLayer = L.heatLayer(pts, { radius: 30, blur: 20, maxZoom: 8, gradient: {0.4:'blue', 0.6:'cyan', 0.8:'yellow', 1.0:'red'} }).addTo(map);
+        // ── Plot Backend Results ──────────────────────────────────────────
+        if (mlData) {
+            // 1. Plot Heatmap (Conflict Zones)
+            const heatPts = mlData.hotspots && mlData.hotspots.length > 0 
+                ? mlData.hotspots.map(h => [h.lat, h.lon, h.intensity])
+                : [[epicLat, epicLng, 1.0]];
+            
+            heatLayer = L.heatLayer(heatPts, { 
+                radius: 35, blur: 25, maxZoom: 8, 
+                gradient: {0.4: 'rgba(0,0,255,0.7)', 0.6: '#00e676', 0.8: '#ffb340', 1.0: '#ff3b3b'} 
+            }).addTo(map);
 
-        [0, 90, 180, 270].forEach(deg => {
-          const rad = deg * Math.PI/180;
-          const maxD = (targetRadius*2) / 111000; 
-          L.polyline([[epicLat, epicLng], [epicLat + maxD*Math.cos(rad), epicLng + maxD*Math.sin(rad)]], {
-            color: '#FF5500', weight: 3, className: 'flow-path', opacity: 0.8
-          }).addTo(drawnLayers);
-        });
+            // 2. Plot Hotspot Markers
+            if (mlData.hotspots) {
+                mlData.hotspots.forEach(h => {
+                    L.circleMarker([h.lat, h.lon], {
+                        radius: 6 + (h.intensity * 6),
+                        color: '#ff3b3b',
+                        fillColor: '#ff3b3b',
+                        fillOpacity: 0.6,
+                        weight: 1
+                    }).bindPopup(`<b>ML Hotspot</b><br>Intensity: ${(h.intensity * 100).toFixed(0)}%<br>Est. Population: ${Math.round(h.population_estimate).toLocaleString()}`)
+                      .addTo(drawnLayers);
+                });
+            }
+
+            // 3. Plot Drift Prediction
+            if (mlData.drift) {
+                const dIcon = L.divIcon({
+                  html: '<div class="drift-marker"><svg viewBox="0 0 24 24" width="20" height="20" fill="var(--cyan)"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2"/></svg></div>',
+                  className: '', iconSize: [20,20], iconAnchor: [10,10]
+                });
+                
+                L.marker([mlData.drift.predicted_lat, mlData.drift.predicted_lon], { icon: dIcon }).addTo(drawnLayers);
+                L.circle([mlData.drift.predicted_lat, mlData.drift.predicted_lon], {
+                    radius: mlData.drift.search_radius_km * 1000,
+                    color: 'var(--cyan)',
+                    fillColor: 'var(--cyan)',
+                    fillOpacity: 0.1,
+                    dashArray: '5, 10',
+                    weight: 1
+                }).bindPopup(`<b>Predicted Drift Zone</b><br>Survival Prob: ${(mlData.drift.survival_probability * 100).toFixed(1)}%<br>Search Radius: ${mlData.drift.search_radius_km.toFixed(1)}km`)
+                  .addTo(drawnLayers);
+            }
+
+            // 4. Plot Evacuation Route
+            if (mlData.route && mlData.route.path) {
+                L.polyline(mlData.route.path, {
+                    color: '#00e676',
+                    weight: 4,
+                    opacity: 0.8,
+                    dashArray: '10, 15',
+                    className: 'route-animate-flow'
+                }).bindPopup(`<b>Optimal Route</b><br>Distance: ${mlData.route.distance_km.toFixed(1)}km<br>Est. Time: ${mlData.route.estimated_time_hours.toFixed(1)}h`)
+                  .addTo(drawnLayers);
+            }
+        } else {
+            // Fallback to dummy viz if backend offline
+            const pts = [];
+            const pCount = 50;
+            for(let i=0; i<pCount; i++) {
+              const ang = Math.random() * Math.PI * 2;
+              const dist = Math.random() * (radiusKm / 111);
+              pts.push([epicLat + dist*Math.cos(ang), epicLng + dist*Math.sin(ang), Math.random()]);
+            }
+            heatLayer = L.heatLayer(pts, { radius: 30, blur: 20 }).addTo(map);
+        }
       }
-      c1.setRadius(r);
+      epicCircle.setRadius(r);
     }, 16);
 }
 

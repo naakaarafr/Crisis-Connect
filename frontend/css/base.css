@@ -32,3 +32,91 @@ h1, h2, h3, h4, h5, h6 { font-family: 'Rajdhani', sans-serif; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+select.event-selector {
+    background: rgba(43, 27, 16, 0.4);
+    color: var(--cyan);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    margin-top: 4px;
+    max-width: 100%;
+}
+select.event-selector:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 8px rgba(255, 85, 0, 0.3);
+}
+select.event-selector option {
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* =========================================================
+   TOM SELECT OVERRIDES
+   ========================================================= */
+.ts-wrapper {
+    margin-top: 4px;
+    width: 60%;
+    min-width: 250px;
+    max-width: 100%;
+}
+.ts-control {
+    background: rgba(43, 27, 16, 0.8) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--cyan) !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    font-size: 14px !important;
+    border-radius: 4px !important;
+    padding: 8px 12px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+    display: flex !important;
+    align-items: center !important;
+    min-height: 38px !important;
+}
+.ts-control.focus {
+    border-color: var(--cyan) !important;
+    box-shadow: 0 0 12px rgba(255, 85, 0, 0.4) !important;
+}
+.ts-control > input {
+    color: #fff !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    width: 100% !important;
+}
+.ts-control > input::placeholder {
+    color: var(--muted) !important;
+}
+.ts-dropdown {
+    background: #1A1008 !important;
+    border: 1px solid var(--cyan) !important;
+    color: var(--text) !important;
+    font-family: 'Share Tech Mono', monospace !important;
+    border-radius: 0 0 4px 4px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.9) !important;
+    z-index: 10000 !important;
+    margin-top: 2px !important;
+}
+.ts-dropdown .option {
+    padding: 10px 15px !important;
+    border-bottom: 1px solid rgba(255, 85, 0, 0.1);
+}
+.ts-dropdown .active {
+    background: rgba(255, 85, 0, 0.3) !important;
+    color: #fff !important;
+}
+.ts-dropdown .option:hover {
+    background: rgba(255, 85, 0, 0.1) !important;
+}
+.ts-dropdown .no-results, .ts-dropdown .searching {
+    padding: 10px 15px !important;
+    color: var(--muted) !important;
+    font-style: italic !important;
+}
+.ts-dropdown .create {
+    display: none !important;
+}
+.ts-wrapper.single .ts-control .item {
+    color: var(--cyan) !important;
+}

@@ -121,44 +121,53 @@ class CrisisPayload:
 
         d = data  # shorthand
 
-        # ── Displacement: resolve aliases → canonical names ──────────────────
-        severity_score = d.get("severity_score",
-                                d.get("conflict_intensity", 0.0))
-        population_density = d.get("population_density",
-                                    d.get("population", 50_000.0))
-        infrastructure_index = d.get("infrastructure_index",
-                                      d.get("infra_score", 0.6))
+        # ── 1. Displacement Module Canonical Keys ──
+        severity_score = _float(d.get("severity_score", 0.0), "severity_score", 0.0)
+        risk_index = _float(d.get("risk_index", 5.0), "risk_index", 0.0)
+        population_density = _float(d.get("population_density", 50_000.0), "population_density", 0.0)
+        infrastructure_index = _float(d.get("infrastructure_index", 0.6), "infrastructure_index", 0.0, 1.0)
 
-        # ── Drift: lat/lon are optional (only required for drift/full) ────────
+        # ── 2. Drift Module Canonical Keys ──
         lat = _float(d["lat"], "lat", -90, 90) if "lat" in d else None
         lon = _float(d["lon"], "lon", -180, 180) if "lon" in d else None
+        wind_speed = _float(d.get("wind_speed", 0.0), "wind_speed", 0.0)
+        wind_dir = _float(d.get("wind_dir", 0.0), "wind_dir", 0.0, 360.0)
+        current_speed = _float(d.get("current_speed", 0.0), "current_speed", 0.0)
+        current_dir = _float(d.get("current_dir", 0.0), "current_dir", 0.0, 360.0)
+        time_hours = _float(d.get("time_hours", 0.0), "time_hours", 0.0)
 
-        # ── Parse coordinates ─────────────────────────────────────────────────
+        # ── 3. Hotspot/Route Extras ──
         raw_coords = d.get("coordinates")
         coordinates = _coords(raw_coords) if raw_coords is not None else None
-
-        # ── Route: target defaults to last coordinate ─────────────────────────
+        
         n_coords = len(coordinates) if coordinates else 0
         default_target = max(n_coords - 1, 0)
+        source = _int(d.get("source", 0), "source", 0)
+        target = _int(d.get("target", default_target), "target", 0)
+
+        # ── 4. Risk Extras (Historical) ──
+        displaced_people = _int(d.get("displaced_people", 0), "displaced_people", 0)
+        disaster_type = str(d.get("disaster_type", "default")).lower().strip()
+        severity = _float(d.get("severity", severity_score), "severity", 0.0)
 
         return cls(
-            severity_score=_float(severity_score, "severity_score", 0.0),
-            risk_index=_float(d.get("risk_index", 5.0), "risk_index", 0.0),
-            population_density=_float(population_density, "population_density", 0.0),
-            infrastructure_index=_float(infrastructure_index, "infrastructure_index", 0.0, 1.0),
+            severity_score=severity_score,
+            risk_index=risk_index,
+            population_density=population_density,
+            infrastructure_index=infrastructure_index,
             lat=lat,
             lon=lon,
-            wind_speed=_float(d.get("wind_speed", 0.0), "wind_speed", 0.0),
-            wind_dir=_float(d.get("wind_dir", 0.0), "wind_dir", 0.0, 360.0),
-            current_speed=_float(d.get("current_speed", 0.0), "current_speed", 0.0),
-            current_dir=_float(d.get("current_dir", 0.0), "current_dir", 0.0, 360.0),
-            time_hours=_float(d.get("time_hours", 0.0), "time_hours", 0.0),
+            wind_speed=wind_speed,
+            wind_dir=wind_dir,
+            current_speed=current_speed,
+            current_dir=current_dir,
+            time_hours=time_hours,
             coordinates=coordinates,
-            source=_int(d.get("source", 0), "source", 0),
-            target=_int(d.get("target", default_target), "target", 0),
-            displaced_people=_int(d.get("displaced_people", 0), "displaced_people", 0),
-            disaster_type=str(d.get("disaster_type", d.get("type", "default"))).lower().strip(),
-            severity=_float(d.get("severity", d.get("severity_score", 0.0)), "severity", 0.0),
+            source=source,
+            target=target,
+            displaced_people=displaced_people,
+            disaster_type=disaster_type,
+            severity=severity,
             _raw=data,
         )
 
@@ -195,9 +204,11 @@ class CrisisPayload:
     def to_risk_features(self) -> dict:
         """Dict expected by SecondaryRiskModel.predict()."""
         return {
-            "disaster_type": self.disaster_type,
-            "severity": self.severity or self.severity_score,
+            "disaster_type":  self.disaster_type,
+            "severity":       self.severity or self.severity_score,
             "displaced_people": self.displaced_people,
+            "lat":            self.lat,   # needed for Open-Meteo weather fetch
+            "lon":            self.lon,
         }
 
     def has_drift_features(self) -> bool:

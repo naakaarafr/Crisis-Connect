@@ -15,23 +15,34 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS disasters (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
             type TEXT NOT NULL,
             severity INTEGER NOT NULL,
+            affected INTEGER DEFAULT 0,
+            hub TEXT,
             lat REAL NOT NULL,
             lon REAL NOT NULL,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    # Migration: Add columns if they don't exist
+    try: c.execute('ALTER TABLE disasters ADD COLUMN name TEXT')
+    except: pass
+    try: c.execute('ALTER TABLE disasters ADD COLUMN affected INTEGER DEFAULT 0')
+    except: pass
+    try: c.execute('ALTER TABLE disasters ADD COLUMN hub TEXT')
+    except: pass
+    
     conn.commit()
     conn.close()
 
-def insert_disaster(d_type, severity, lat, lon):
+def insert_disaster(d_type, severity, lat, lon, name=None, affected=0, hub=None):
     conn = get_db_connection()
     c = conn.cursor()
     c.execute('''
-        INSERT INTO disasters (type, severity, lat, lon)
-        VALUES (?, ?, ?, ?)
-    ''', (d_type, severity, lat, lon))
+        INSERT INTO disasters (type, severity, lat, lon, name, affected, hub)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (d_type, severity, lat, lon, name, affected, hub))
     conn.commit()
     row_id = c.lastrowid
     conn.close()
@@ -48,9 +59,14 @@ def get_all_disasters():
     for r in rows:
         results.append({
             "id": r['id'],
+            "name": r['name'] or f"{r['type']} at {r['lat']},{r['lon']}",
             "type": r['type'],
             "severity": r['severity'],
-            "location": {"lat": r['lat'], "lon": r['lon']}
+            "affected": r['affected'],
+            "hub": r['hub'] or "Global Command",
+            "lat": r['lat'],
+            "lng": r['lon'],
+            "timestamp": r['timestamp']
         })
     return results
 
@@ -64,9 +80,14 @@ def get_disaster_by_id(d_id):
     if r:
         return {
             "id": r['id'],
+            "name": r['name'] or f"{r['type']} at {r['lat']},{r['lon']}",
             "type": r['type'],
             "severity": r['severity'],
-            "location": {"lat": r['lat'], "lon": r['lon']}
+            "affected": r['affected'],
+            "hub": r['hub'] or "Global Command",
+            "lat": r['lat'],
+            "lng": r['lon'],
+            "timestamp": r['timestamp']
         }
     return None
 

@@ -34,14 +34,18 @@ def detect_hotspots(data):
     else:
         lat, lon = 0.0, 0.0
         
-    # Generate 20 nearby random scatter points (std dev roughly correlates to 5-10km footprint)
-    lat_points = np.random.normal(lat, 0.05, 20)
-    lon_points = np.random.normal(lon, 0.05, 20)
+    # Generate 60 nearby search points for clustering
+    # Scale dispersion based on severity to capture wider geographic impacts for larger events
+    severity = float(data.get("severity", 5.0))
+    dispersion = 0.02 + (severity * 0.015) # Heuristic for degree spread
+    
+    lat_points = np.random.normal(lat, dispersion, 60)
+    lon_points = np.random.normal(lon, dispersion, 60)
     
     points = np.column_stack((lat_points, lon_points))
     
-    # Cluster points using DBSCAN
-    db = DBSCAN(eps=0.03, min_samples=3).fit(points)
+    # Cluster points using DBSCAN with adaptive epsilon based on dispersion
+    db = DBSCAN(eps=dispersion * 0.6, min_samples=4).fit(points)
     labels = db.labels_
     
     hotspots = []

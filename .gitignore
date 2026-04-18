@@ -24,3 +24,11 @@ __pycache__/
 
 # Jupyter
 .ipynb_checkpoints
+
+# Logs & DB
+*.log
+*.db
+nohup.out
+frontend/src/
+node_modules/
+.DS_Store

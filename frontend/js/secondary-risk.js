@@ -1,75 +1,205 @@
 /**
  * CrisisConnect Secondary Risk Assessment Logic
- * Handles mini-map heatmap visualization and risk scoring grids.
+ * Fetches real risk scores from /predict-risk and /predict-hotspots via ML backend.
  */
 
-const DISASTERS = [
-  {id:1,name:"Türkiye Earthquake",type:"Earthquake",severity:5,lat:37.5,lng:36.8,affected:2400000},
-  {id:2,name:"Bangladesh Flooding",type:"Flood",severity:4,lat:23.8,lng:90.4,affected:890000},
-  {id:3,name:"California Wildfire",type:"Wildfire",severity:3,lat:34.0,lng:-118.2,affected:145000},
-  {id:4,name:"Mozambique Cyclone",type:"Cyclone",severity:4,lat:-19.8,lng:34.9,affected:670000},
-  {id:5,name:"Pakistan Heatwave",type:"Heatwave",severity:3,lat:30.3,lng:69.3,affected:320000},
-  {id:6,name:"Philippines Typhoon",type:"Typhoon",severity:5,lat:12.8,lng:122.5,affected:1200000},
-  {id:7,name:"Peru Landslides",type:"Landslide",severity:2,lat:-9.2,lng:-75.0,affected:45000}
-];
+let d = null;
+
+// Dynamic Risk Card definitions are now streamed directly from the Python ML backend.
 
 let map;
+let _apiData = null; // store fetched API response
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const paramId = parseInt(urlParams.get('id'));
-    const d = DISASTERS.find(x => x.id === paramId) || DISASTERS[0];
-    
-    document.getElementById('sub-title').innerText = d.name;
+
+    // ── 1. Fetch ALL disasters and populate the dropdown ──────────────────────
+    let all_disasters = [];
+    try {
+        all_disasters = await CRISIS_API.getDisasters();
+        d = paramId
+            ? await CRISIS_API.getDisasterById(paramId)
+            : all_disasters[0];
+    } catch (err) {
+        console.error('Failed to fetch disasters:', err);
+    }
+
+    if (!d) {
+        d = { id: 9999, name: 'Synthetic Crisis Event', lat: 25.2, lng: 55.3,
+              severity: 4.5, affected: 200000, type: 'Earthquake' };
+        all_disasters.push(d);
+    }
+
+    const selectEl = document.getElementById('event-selector');
+    if (selectEl) {
+        selectEl.innerHTML = all_disasters.map(ev =>
+            `<option value="${ev.id}" ${ev.id == d.id ? 'selected' : ''}>${ev.name}</option>`
+        ).join('');
+        selectEl.addEventListener('change', (e) => {
+            window.location.search = '?id=' + e.target.value;
+        });
+        
+        // Initialize Searchable Dropdown
+        if (typeof TomSelect !== 'undefined') {
+            new TomSelect(selectEl, {
+                create: false,
+                sortField: { field: "text", direction: "asc" },
+                dropdownParent: 'body'
+            });
+        }
+    }
 
     initMap(d);
-    const risks = calculateRisks(d);
-    renderGrid(risks);
     initTimestamp();
+
+    // ── 2. Fetch ML data and render ───────────────────────────────────────────
+    await fetchAndRenderRisk();
+    startRealtimePoll();
 });
 
-function initMap(d) {
-    map = L.map('map', { 
-      zoomControl: false, attributionControl: false, 
-      dragging: false, scrollWheelZoom: false, doubleClickZoom: false 
-    }).setView([d.lat, d.lng], 7);
-    
-    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+async function fetchAndRenderRisk() {
+    if (!d) return;
+    const displaced = Math.floor((d.affected || 200000) * 0.35);
+    const disasterType = (d.type || 'default').toLowerCase();
 
-    const hPoints = [];
-    const intensity = d.severity * 0.2;
-    hPoints.push([d.lat, d.lng, Math.min(1.0, intensity * 1.5)]);
-    
-    for(let i=0; i<40; i++) {
-       hPoints.push([d.lat + (Math.random()-0.5)*3, d.lng + (Math.random()-0.5)*3, intensity * Math.random()]);
+    let apiRisk = null;
+    try {
+        const backendOk = typeof CRISIS_API !== 'undefined' && await CRISIS_API.isAvailable().catch(() => false);
+        if (backendOk) {
+            const basePayload = {
+                severity_score:       d.severity * 200,
+                risk_index:           5.0 + d.severity,
+                population_density:   Math.floor((d.affected || 200000) / 100),
+                infrastructure_index: 0.5,
+                lat:  d.lat,
+                lon:  d.lng,
+                time_hours: 48,
+                displaced_people: displaced,
+                disaster_type: disasterType,
+                severity: d.severity,
+            };
+
+            // Parallel: risk cards + hotspot map markers
+            const [riskRes, spotsRes] = await Promise.allSettled([
+                CRISIS_API.post(CRISIS_API.endpoints.predictRisk, basePayload),
+                CRISIS_API.post(CRISIS_API.endpoints.predictSpots, {
+                    ...basePayload,
+                    coordinates: [
+                        [d.lat,        d.lng       ],
+                        [d.lat + 0.4,  d.lng + 0.3 ],
+                        [d.lat - 0.3,  d.lng + 0.4 ],
+                        [d.lat + 0.2,  d.lng - 0.3 ],
+                    ]
+                })
+            ]);
+
+            if (riskRes.status === 'fulfilled') {
+                apiRisk = riskRes.value;
+                _apiData = apiRisk;
+
+                // Show live weather badge
+                const wx = apiRisk?.risk?.weather || {};
+                const weatherBadge = document.getElementById('weather-badge');
+                if (weatherBadge && wx.temperature !== undefined) {
+                    weatherBadge.textContent =
+                        `🌡 ${wx.temperature}°C  💨 ${wx.windspeed} km/h  WMO:${wx.weathercode}`;
+                }
+            }
+
+            if (spotsRes.status === 'fulfilled') {
+                addHotspotMarkers(spotsRes.value.hotspots || []);
+            }
+        }
+    } catch(e) {
+        console.warn('[CrisisConnect] Risk API unavailable:', e.message);
     }
-    
-    L.heatLayer(hPoints, {
-      radius: 40, blur: 35,
-      gradient: {0.2:'#FF5500', 0.4:'#00e676', 0.6:'#b2ff59', 0.8:'#ffb340', 1.0:'#ff3b3b'}
-    }).addTo(map);
+
+    const risks = buildRiskCards(apiRisk);
+    renderGrid(risks);
 }
 
-function calculateRisks(d) {
-    let base = d.severity * 15;
-    const riskDefs = [
-      { id: 'disease', name: 'Disease Outbreak', score: base + (d.type === 'Earthquake' ? 10 : (d.type === 'Flood' ? 25 : 0)), icon: '<circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M5 5l1.5 1.5M17.5 17.5L19 19M2 12h2M20 12h2M5 19l1.5-1.5M17.5 6.5L19 5"/>', desc: 'Risk of infectious diseases clustering and spreading rapidly among displaced population brackets.' },
-      { id: 'overcrowd', name: 'Overcrowding', score: base + (d.type === 'Cyclone' ? 25 : 15), icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>', desc: 'Severe limits on available physical space and privacy for newly evacuated household cohorts.' },
-      { id: 'food', name: 'Food Shortage', score: base + (d.type === 'Flood' ? 20 : (d.type === 'Wildfire' ? 15 : 0)), icon: '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>', desc: 'Depleted regional stockpile metrics and completely disrupted supply chain logistics.' },
-      { id: 'water', name: 'Water Contamination', score: base + (d.type === 'Flood' ? 35 : (d.type === 'Cyclone' ? 20 : 0)), icon: '<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>', desc: 'Critical systemic breakdown of mass sanitization and potable drinking water infrastructure.' },
-      { id: 'mental', name: 'Mental Health Crisis', score: base + 20 + (d.type === 'Wildfire' ? 30 : 0), icon: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>', desc: 'Elevated sustained psychological trauma recorded across all localized affected cohorts.' },
-      { id: 'infra', name: 'Infrastructure Collapse', score: base + (d.type === 'Earthquake' ? 30 : 10), icon: '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="2"/><line x1="15" y1="22" x2="15" y2="2"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="7" x2="9" y2="7"/><line x1="4" y1="17" x2="9" y2="17"/><line x1="15" y1="7" x2="20" y2="7"/><line x1="15" y1="17" x2="20" y2="17"/>', desc: 'Continued systemic degradation of critical load-bearing transportation and housing structural assets.' }
-    ];
+function startRealtimePoll() {
+    setInterval(fetchAndRenderRisk, 30000); // 30s live refresh
+}
 
-    riskDefs.forEach(r => {
-      r.score = Math.max(0, Math.min(100, Math.floor(r.score)));
-      if(r.score >= 80) { r.level = 'CRITICAL'; r.cBg = 'var(--red)'; r.tMsg = `↑ +${Math.floor(Math.random()*15 + 10)}% this week`; r.tIco = '<path d="M12 19V5M5 12l7-7 7 7"/>'; r.tCol = 'var(--red)'; } 
-      else if(r.score >= 60) { r.level = 'HIGH'; r.cBg = 'var(--amber)'; r.tMsg = `↑ +${Math.floor(Math.random()*10 + 2)}% this week`; r.tIco = '<path d="M12 19V5M5 12l7-7 7 7"/>'; r.tCol = 'var(--amber)'; } 
-      else if(r.score >= 40) { r.level = 'MEDIUM'; r.cBg = '#2979ff'; r.tMsg = `→ Stable trajectory`; r.tIco = '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>'; r.tCol = '#2979ff'; } 
-      else { r.level = 'LOW'; r.cBg = 'var(--green)'; r.tMsg = `↓ -${Math.floor(Math.random()*5 + 1)}% improving`; r.tIco = '<path d="M12 5v14M5 12l7 7 7-7"/>'; r.tCol = 'var(--green)'; }
-      r.cBorder = r.cBg;
+/**
+ * Build risk card data array directly from dynamic API payloads.
+ * Evaluates real-time meteorology passed by backend.
+ */
+function buildRiskCards(apiRisk) {
+    // If backend ML drops offline somehow, inject safe fallbacks
+    let dynamicCards = [];
+    if (apiRisk && apiRisk.risk && apiRisk.risk.cards) {
+        dynamicCards = apiRisk.risk.cards;
+    } else {
+        // Fallback safety if model refuses
+        dynamicCards = [
+            { id:'disease', name: 'Disease Outbreak', score: 45, icon: '<path d="M12 2v2M12 20v2M5 5l1.5 1.5M17.5 17.5L19 19M2 12h2M20 12h2M5 19l1.5-1.5M17.5 6.5L19 5"/>', desc: 'Connectivity error to ML processing core.' }
+        ];
+    }
+
+    return dynamicCards.map(def => {
+        const score = def.score || 0;
+        let level, cBg, tMsg, tIco, tCol;
+
+        if (score >= 80) {
+            level = 'CRITICAL'; cBg = 'var(--red)'; tCol = 'var(--red)';
+            tMsg = `↑ Critical level — immediate intervention required`;
+            tIco = '<path d="M12 19V5M5 12l7-7 7 7"/>';
+        } else if (score >= 60) {
+            level = 'HIGH'; cBg = 'var(--amber)'; tCol = 'var(--amber)';
+            tMsg = `↑ Elevated — active monitoring needed`;
+            tIco = '<path d="M12 19V5M5 12l7-7 7 7"/>';
+        } else if (score >= 40) {
+            level = 'MEDIUM'; cBg = '#2979ff'; tCol = '#2979ff';
+            tMsg = `→ Stable — continues to be tracked`;
+            tIco = '<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>';
+        } else {
+            level = 'LOW'; cBg = 'var(--green)'; tCol = 'var(--green)';
+            tMsg = `↓ Contained — improving conditions`;
+            tIco = '<path d="M12 5v14M5 12l7 7 7-7"/>';
+        }
+
+        const mlLabel = _apiData ? ' · Open-Meteo Synced' : '';
+        return { ...def, score, level, cBg, cBorder: cBg, tMsg: tMsg + mlLabel, tIco, tCol };
     });
-    return riskDefs;
+}
+
+function addHotspotMarkers(hotspots) {
+    if (!map || !hotspots.length) return;
+    hotspots.forEach(h => {
+        L.circleMarker([h.lat, h.lon], {
+            radius: 8 + h.intensity * 6,
+            color: '#ff3b3b',
+            fillColor: '#ff3b3b',
+            fillOpacity: 0.5,
+            weight: 1,
+        }).bindPopup(`<b>ML Hotspot</b><br>Intensity: ${(h.intensity * 100).toFixed(0)}%<br>Est. population: ${(h.population_estimate || 0).toLocaleString()}`).addTo(map);
+    });
+}
+
+function initMap(d) {
+    map = L.map('map', {
+      zoomControl: false, attributionControl: false,
+      dragging: false, scrollWheelZoom: false, doubleClickZoom: false
+    }).setView([d.lat, d.lng], 7);
+
+    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+    // Heatmap centred on the disaster — stays even without API
+    const intensity = d.severity * 0.2;
+    const hPoints = [[d.lat, d.lng, Math.min(1.0, intensity * 1.5)]];
+    const offsets = [
+        [0.5, 0.3], [-0.4, 0.4], [0.3, -0.5], [-0.2, -0.3],
+        [0.7, 0.1], [-0.6, 0.2], [0.1, 0.8], [-0.1, -0.7],
+    ];
+    offsets.forEach(([dlat, dlng]) => hPoints.push([d.lat + dlat, d.lng + dlng, intensity * 0.6]));
+
+    L.heatLayer(hPoints, {
+        radius: 40, blur: 35,
+        gradient: {0.2:'#FF5500', 0.4:'#00e676', 0.6:'#b2ff59', 0.8:'#ffb340', 1.0:'#ff3b3b'}
+    }).addTo(map);
 }
 
 function renderGrid(risks) {

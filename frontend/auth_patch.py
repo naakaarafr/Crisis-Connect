@@ -1,7 +1,6 @@
 import re
 
 FILES = [
-    'index.html',
     'disaster.html',
     'displacement.html',
     'resources.html',

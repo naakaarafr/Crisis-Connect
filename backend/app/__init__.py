@@ -7,9 +7,23 @@ logging.basicConfig(
 )
 
 
+import os
+
 def create_app():
     """Application factory — create and configure the Flask app."""
-    app = Flask(__name__)
+    # Serve the frontend build seamlessly
+    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../frontend'))
+    app = Flask(__name__, static_folder=frontend_dir, static_url_path='')
+    app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
+    @app.after_request
+    def add_header(r):
+        """Force browser not to cache static files during development."""
+        r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        r.headers["Pragma"] = "no-cache"
+        r.headers["Expires"] = "0"
+        return r
+
 
     # Enable CORS — allows the static frontend to call the API from any origin
     try:
@@ -46,28 +60,13 @@ def create_app():
 
     @app.route('/', methods=['GET'])
     def index():
-        return jsonify({
-            "name": "CrisisConnect API",
-            "version": "1.0.0",
-            "status": "running",
-            "endpoints": [
-                "GET  /health",
-                "POST /api/disaster/analyze",
-                "POST /simulate",
-                "GET  /disasters",
-                "GET  /disasters/<id>",
-                "GET  /disasters/<id>/impact",
-                "GET  /alerts",
-                "GET  /analytics",
-                "POST /predict-drift",
-                "POST /predict         — displacement",
-                "POST /predict-drift   — ocean drift",
-                "POST /predict-hotspots — DBSCAN clusters",
-                "POST /predict-route   — evacuation route",
-                "POST /predict-risk    — secondary risk",
-                "POST /predict-full    — all models combined"
-            ]
-        }), 200
+        # Connect frontend natively to the root
+        return app.send_static_file('index.html')
+
+    @app.route('/<path:filename>')
+    def static_files(filename):
+        # Fallback router for frontend pages (e.g., displacement.html)
+        return app.send_static_file(filename)
 
     return app
 

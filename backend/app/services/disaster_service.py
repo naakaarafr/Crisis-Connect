@@ -1,4 +1,4 @@
-from app.data_sources import fetch_nasa_disasters, fetch_gdacs_disasters
+from app.data_sources import fetch_nasa_disasters, fetch_gdacs_disasters, fetch_usgs_disasters
 
 from app.database import (
     insert_disaster, 
@@ -8,28 +8,45 @@ from app.database import (
 )
 
 ALLOWED_DISASTER_TYPES = {
-    "flood", "storm", "epidemic", "drought", "volcanic activity",
-    "industrial accident", "chemical spill", "gas leak", 
-    "explosion (industrial)", "fire (industrial)", "oil spill", 
-    "radiation leak", "nuclear accident"
+    "Earthquake", "Flood", "Storm", "Epidemic", "Drought", "Volcanic Activity",
+    "Industrial Accident", "Chemical Spill", "Gas Leak", 
+    "Explosion (Industrial)", "Fire (Industrial)", "Oil Spill", 
+    "Radiation Leak", "Nuclear Accident"
 }
 
-def get_all_disasters():
-    """Retrieve all disasters by merging local state with live external services."""
-    # Fetch external data
-    nasa_data = fetch_nasa_disasters()
-    gdacs_data = fetch_gdacs_disasters()
+def sync_external_data():
+    """Poll all external sources and synchronize with the local database."""
+    sources = [
+        ("NASA", fetch_nasa_disasters),
+        ("GDACS", fetch_gdacs_disasters),
+        ("USGS", fetch_usgs_disasters)
+    ]
     
-    combined = nasa_data + gdacs_data
-    
-    for d in combined:
-        lat = d["location"][0]
-        lon = d["location"][1]
-        
-        # Deduplicate entries by type and bounded location
-        if not disaster_exists(d["type"], lat, lon):
-            insert_disaster(d["type"], d["severity"], lat, lon)
+    total_added = 0
+    for name, fetcher in sources:
+        try:
+            data = fetcher()
+            for d in data:
+                lat, lon = d["location"][0], d["location"][1]
+                # Deduplicate by type and approximate location
+                if not disaster_exists(d["type"], lat, lon):
+                    insert_disaster(
+                        d_type=d["type"],
+                        severity=d["severity"],
+                        lat=lat,
+                        lon=lon,
+                        name=d.get("name"),
+                        affected=d.get("affected", 0),
+                        hub=d.get("hub")
+                    )
+                    total_added += 1
+        except Exception as e:
+            print(f"Failed to sync {name}: {e}")
+            
+    return total_added
 
+def get_all_disasters():
+    """Retrieve all disasters from the database (background sync handles freshness)."""
     return db_get_all()
 
 def add_disaster(data):
@@ -51,8 +68,72 @@ def add_disaster(data):
     return db_get_by_id(new_id)
 
 def get_disaster_by_id(disaster_id):
-    """Retrieve a single disaster by ID."""
-    return db_get_by_id(disaster_id)
+    """Retrieve a single disaster by ID, enriched with dynamic timeline intel."""
+    d = db_get_by_id(disaster_id)
+    if d:
+        d["timeline"] = generate_disaster_timeline(d)
+    return d
+
+def generate_disaster_timeline(d):
+    """
+    Generate a dynamic sequence of events based on disaster type and severity.
+    Uses 'timestamp' as the baseline T-0.
+    """
+    import datetime
+    
+    # Baseline detection logic
+    base_ts = d.get("timestamp")
+    if isinstance(base_ts, str):
+        try:
+            # Handle potential formats from SQLite (YYYY-MM-DD HH:MM:SS)
+            start_dt = datetime.datetime.strptime(base_ts.split('.')[0], "%Y-%m-%d %H:%M:%S")
+        except:
+            start_dt = datetime.datetime.utcnow()
+    else:
+        start_dt = datetime.datetime.utcnow()
+
+    # Timeline Template Generation
+    timeline = []
+    
+    # Phase 1: Detection (Past)
+    timeline.append({
+        "status": "Past",
+        "title": "Satellite Detection",
+        "timestamp": start_dt.strftime("%Y-%m-%d %H:%M:%S") + " UTC",
+        "desc": f"Primary thermal and seismic sensors registered {d['type']} activity. Uplink established to Central Command."
+    })
+    
+    # Phase 2: Response (Current or Near-Past)
+    offset_resp = 2 if d['severity'] > 3 else 4
+    resp_dt = start_dt + datetime.timedelta(hours=offset_resp)
+    timeline.append({
+        "status": "Current",
+        "title": "Emergency Response Triggered",
+        "timestamp": resp_dt.strftime("%Y-%m-%d %H:%M:%S") + " UTC",
+        "desc": f"Local first responders deployed to coordinates {d['lat']}, {d['lng']}. Primary triage centers initializing."
+    })
+    
+    # Phase 3: Logistics (Future)
+    offset_log = 12 if d['severity'] > 3 else 24
+    log_dt = start_dt + datetime.timedelta(hours=offset_log)
+    timeline.append({
+        "status": "Future",
+        "title": "Logistical Corridor Deployment",
+        "timestamp": log_dt.strftime("%Y-%m-%d %H:%M:%S") + " UTC",
+        "desc": f"Airlift of medical supplies and temporary shelters estimated at T+{offset_log}h. Secondary routes being surveyed."
+    })
+    
+    # Phase 4: Stabilization (Future)
+    offset_stab = 48 if d['severity'] > 3 else 72
+    stab_dt = start_dt + datetime.timedelta(hours=offset_stab)
+    timeline.append({
+        "status": "Future",
+        "title": "Target Stabilization Window",
+        "timestamp": stab_dt.strftime("%Y-%m-%d %H:%M:%S") + " UTC",
+        "desc": "Models predict peak impact stabilization and transition to civil recovery phase."
+    })
+    
+    return timeline
 
 def calculate_impact(disaster_id):
     """

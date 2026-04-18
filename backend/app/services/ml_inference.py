@@ -9,58 +9,47 @@ warnings.filterwarnings("ignore", category=UserWarning)
 logger = logging.getLogger(__name__)
 
 # Load the trained ML Model artifact at startup
-MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ml', 'model.pkl')
+MODEL_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'models')
+MODEL_PATH = os.path.join(MODEL_ROOT, 'displacement_xgb.pkl')
 ML_MODEL = None
 
 try:
     if os.path.exists(MODEL_PATH):
+        # We need to import xgboost to correctly unpickle an XGBRegressor
+        import xgboost as xgb
         with open(MODEL_PATH, 'rb') as f:
             ML_MODEL = pickle.load(f)
-        logger.info(f"Successfully loaded ML model from {MODEL_PATH}")
+        logger.info(f"Successfully loaded XGBoost model from {MODEL_PATH}")
     else:
         logger.warning(f"ML model not found at {MODEL_PATH}. Falling back to default simulation.")
 except Exception as e:
     logger.error(f"Failed to load ML Model from {MODEL_PATH}: {e}")
 
 
+from src.api.inference import predict_displacement
+
 def predict_displacement_percentage(severity_score: float, risk_index: float, population_density: float, infrastructure_index: float) -> float:
     """
-    Inference function that uses the loaded ML model or a fallback heuristic.
+    DEPRECATED: Legacy bridge to unified XGBoost engine.
+    Now redirects to src.api.inference for production-grade results.
     """
-    if ML_MODEL and not isinstance(ML_MODEL, dict):
-        try:
-            logger.info("Executing inference via trained ML Model")
-            # Create DataFrame with the exact columns expected by XGBoost
-            input_df = pd.DataFrame([{
-                "severity_score": severity_score,
-                "risk_index": risk_index,
-                "population_density": population_density,
-                "infrastructure_index": infrastructure_index
-            }])
-            prediction = ML_MODEL.predict(input_df)[0]
-            logger.info(f"ML Model predicted: {prediction}")
-            
-            # Ensure it's a valid percentage between 0 and 100
-            prediction = max(0.0, min(100.0, float(prediction)))
-            return prediction
-        except Exception as e:
-            logger.error(f"Error during ML prediction: {e}. Falling back to heuristic.")
-    elif ML_MODEL and isinstance(ML_MODEL, dict):
-        logger.info(f"Executing inference via {ML_MODEL.get('algorithm', 'unknown')} v{ML_MODEL.get('version', '1.0')}")
-    else:
-        logger.info("Predicting displacement with ML fallback heuristic")
-        
-    # Mock heuristic replicating the expected model behavior:
-    # - Higher severity and risk -> more displacement
-    # - Higher infrastructure -> lower displacement
+    logger.info("Redirecting legacy displacement call to unified XGBoost engine")
     
-    # Assuming expected scales: severity_score (0-100), risk_index (0-10), infra (0-10)
-    base_percentage = (severity_score * 0.4) + (risk_index * 2.0)
-    mitigation = (infrastructure_index * 1.5)
+    payload = {
+        "severity_score": severity_score,
+        "risk_index": risk_index,
+        "population_density": population_density,
+        "infrastructure_index": infrastructure_index
+    }
     
-    displaced_percentage = base_percentage - mitigation
+    # Use standard prediction logic
+    res = predict_displacement(payload)
     
-    # Ensure it's a valid percentage between 0 and 100
-    displaced_percentage = max(0.0, min(100.0, displaced_percentage))
+    # Standardize result back to a percentage for legacy callers
+    # (The new XGB model often returns a count; if it's > 100 we assume it's a count and normalize)
+    val = res.get("displacement", 0.0)
+    if val > 100:
+        # Heuristic normalization for legacy percentage expectation
+        return min(95.0, (val / population_density) * 10 if population_density > 0 else 30.0)
     
-    return displaced_percentage
+    return val

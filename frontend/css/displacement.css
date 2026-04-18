@@ -72,3 +72,54 @@
 .play-anim-btn { width: 100%; background: transparent; border: 1px solid var(--cyan); color: var(--cyan); font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; padding: 12px; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; }
 .play-anim-btn:hover { background: rgba(255, 85, 0, 0.1); box-shadow: 0 0 12px rgba(255,85,0,0.2); }
 .play-anim-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Dynamic stats grid ────────────────────────────────────────────────────── */
+.disp-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+}
+.disp-stat-card {
+    background: rgba(43, 27, 16, 0.25);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    transition: border-color 0.3s;
+}
+.disp-stat-card:hover { border-color: var(--cyan); }
+.disp-stat-label {
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-family: 'Share Tech Mono', monospace;
+}
+.disp-stat-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cyan);
+    line-height: 1.2;
+    transition: all 0.4s;
+}
+.ml-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 4px 12px 8px;
+    letter-spacing: 0.5px;
+}
+
+/* ── Animations for dynamic data updates ─────────────────────────────────── */
+@keyframes data-bump {
+    0% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.05); filter: brightness(1.5); color: var(--cyan); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+.data-update {
+    animation: data-bump 0.4s ease-out;
+    display: inline-block;
+}

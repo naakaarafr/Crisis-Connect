@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     storage.setItem('cc_token', token);
                     storage.setItem('cc_user', email);
                     showSuccess();
-                    setTimeout(() => window.location.href = 'dashboard.html?v=2.0', 1400);
+                    setTimeout(() => window.location.href = 'dashboard.html?v=3.2', 1400);
                 } else {
                     showError('AUTHENTICATION FAILED — Invalid credentials. Try DEMO ACCESS.');
                 }

@@ -5,12 +5,23 @@
 
 // 1. Auth Guard: Check for token on load
 (function() {
-    const isLoginPage = window.location.pathname.endsWith('login.html');
-    const isLandingPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
+    const path = window.location.pathname.toLowerCase();
+    const isLoginPage = path.endsWith('login.html');
+    const isLandingPage = path.endsWith('index.html') || path === '/' || path.endsWith('/') || path === '';
+    
     const token = localStorage.getItem('cc_token') || sessionStorage.getItem('cc_token');
 
-    if (!token && !isLoginPage && !isLandingPage) {
-        window.location.replace('login.html?v=2.0');
+    // If logged in and on login/landing, we might want different behaviors
+    if (token) {
+        if (isLoginPage) {
+            window.location.replace('dashboard.html?v=3.2');
+        }
+        // Landing page handles its own "Go to Dashboard" UI via updateNavActions()
+    } else {
+        // Not logged in: Redirect to Landing Page (NOT login) to ensure it's "seen before login"
+        if (!isLoginPage && !isLandingPage) {
+            window.location.replace('/?v=3.2');
+        }
     }
 })();
 

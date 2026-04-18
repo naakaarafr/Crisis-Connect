@@ -21,14 +21,14 @@ def fetch_gdacs_disasters():
     standard_data = []
     
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=15)
         response.raise_for_status()
         raw_events = response.json()
         
-        # Verify JSON is a list before parsing
         if isinstance(raw_events, list):
-            # Parse top 20 recent alerts
-            for event in raw_events[:20]:
+            # Parse top 100 recent alerts for worldwide density
+            for event in raw_events[:100]:
+                event_name = event.get("eventname", "GDACS Alert")
                 event_type = event.get("eventtype", "Unknown")
                 
                 # GDACS ranks severity by alert level: Green, Orange, Red
@@ -47,9 +47,12 @@ def fetch_gdacs_disasters():
                 if event_type.lower() != "unknown" and (lat != 0.0 or lon != 0.0):
                     normalized_type = normalize_disaster_type(event_type)
                     standard_data.append({
+                        "name": event_name,
                         "type": normalized_type,
                         "severity": int(severity),
-                        "location": [float(lat), float(lon)]
+                        "affected": 10000 * severity, # Scale affected by severity
+                        "location": [float(lat), float(lon)],
+                        "hub": f"GDACS {event.get('country', 'Global')}"
                     })
                     
     except Exception as e:

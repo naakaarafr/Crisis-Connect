@@ -46,6 +46,10 @@ def _inference():
     from src.api.inference import predict_displacement, predict_drift, predict_hotspots, predict_full
     return predict_displacement, predict_drift, predict_hotspots, predict_full
 
+def _sync():
+    from app.services.disaster_service import sync_external_data
+    return sync_external_data
+
 
 # ── Scenario seeds (rotate to keep demo varied) ───────────────────────────────
 SCENARIOS = [
@@ -98,7 +102,7 @@ def job_env_update():
     scenario = _pick_scenario()
 
     snapshot = {
-        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat() + "Z",
         "scenario": scenario["location"],
         "disaster_type": scenario["disaster_type"],
         # Displacement features
@@ -145,7 +149,7 @@ def job_predict_displacement():
         predict_displacement, *_ = _inference()
         result = predict_displacement(env)
         cache.set("prediction_displacement", {
-            "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat() + "Z",
             "scenario": env.get("scenario"),
             **result,
         })
@@ -165,7 +169,7 @@ def job_predict_drift():
         _, predict_drift, *_ = _inference()
         result = predict_drift(env)
         cache.set("prediction_drift", {
-            "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat() + "Z",
             "scenario": env.get("scenario"),
             **result,
         })
@@ -187,7 +191,7 @@ def job_predict_hotspots():
         result = predict_hotspots(env)
         count = len(result.get("hotspots", []))
         cache.set("prediction_hotspots", {
-            "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat() + "Z",
             "scenario": env.get("scenario"),
             **result,
         })
@@ -208,7 +212,7 @@ def job_predict_full():
         *_, predict_full = _inference()
         result = predict_full(env)
         cache.set("prediction_full", {
-            "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat() + "Z",
             "scenario": env.get("scenario"),
             **result,
         })
@@ -217,6 +221,18 @@ def job_predict_full():
                     f"risk={result.get('risk', {}).get('category')}")
     except Exception as e:
         logger.error(f"[Scheduler] full_pipeline FAILED: {e}")
+
+
+# ── Job 6: External Data Sync ──────────────────────────────────────────────────
+
+def job_sync_external_data():
+    """Poll external feeds and update the master disaster database."""
+    try:
+        sync_external_data = _sync()
+        count = sync_external_data()
+        logger.info(f"[Scheduler] sync_external_data → added {count} new events")
+    except Exception as e:
+        logger.error(f"[Scheduler] sync_external_data FAILED: {e}")
 
 
 # ── Scheduler factory ─────────────────────────────────────────────────────────
@@ -242,35 +258,42 @@ def start(app=None):
         IntervalTrigger(seconds=30),
         id="env_update",
         replace_existing=True,
-        next_run_time=datetime.datetime.utcnow(),   # run immediately on startup
+        next_run_time=datetime.datetime.now(datetime.timezone.utc),   # run immediately on startup
     )
     _scheduler.add_job(
         job_predict_displacement,
         IntervalTrigger(seconds=60),
         id="displacement",
         replace_existing=True,
-        next_run_time=datetime.datetime.utcnow() + datetime.timedelta(seconds=2),
+        next_run_time=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=2),
     )
     _scheduler.add_job(
         job_predict_drift,
         IntervalTrigger(seconds=45),
         id="drift",
         replace_existing=True,
-        next_run_time=datetime.datetime.utcnow() + datetime.timedelta(seconds=3),
+        next_run_time=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=3),
     )
     _scheduler.add_job(
         job_predict_hotspots,
         IntervalTrigger(seconds=90),
         id="hotspots",
         replace_existing=True,
-        next_run_time=datetime.datetime.utcnow() + datetime.timedelta(seconds=4),
+        next_run_time=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=4),
     )
     _scheduler.add_job(
         job_predict_full,
         IntervalTrigger(seconds=120),
         id="full_pipeline",
         replace_existing=True,
-        next_run_time=datetime.datetime.utcnow() + datetime.timedelta(seconds=5),
+        next_run_time=datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=5),
+    )
+    _scheduler.add_job(
+        job_sync_external_data,
+        IntervalTrigger(minutes=15),
+        id="sync_external_data",
+        replace_existing=True,
+        next_run_time=datetime.datetime.now(datetime.timezone.utc), # Run immediately on startup
     )
 
     _scheduler.start()

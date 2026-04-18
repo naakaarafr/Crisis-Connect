@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import pandas as pd
 from xgboost import XGBRegressor
 
 class DisplacementModel:
@@ -17,7 +18,15 @@ class DisplacementModel:
         self.model.fit(X, y)
 
     def predict(self, features):
-        features = np.array(features).reshape(1, -1)
+        if isinstance(features, dict):
+            features = pd.DataFrame([features])
+        elif isinstance(features, (list, np.ndarray)):
+            # If it's a flat list, reshape it
+            if not hasattr(features[0], '__iter__'):
+                features = np.array(features).reshape(1, -1)
+            else:
+                features = np.array(features)
+        
         return float(self.model.predict(features)[0])
 
     def save(self, path="models/displacement_xgb.pkl"):

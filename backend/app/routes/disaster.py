@@ -27,7 +27,11 @@ def analyze_disaster():
     try:
         displacement = calculate_displacement(data)
         risk = assess_risk(data)
+        
+        # Feed high-precision ML displacement into the hotspot detector for scaled node generation
+        data["displaced"] = displacement.get("estimated_displaced_persons", 0)
         hotspots = detect_hotspots(data)
+        
         resources = allocate_resources(displacement.get("estimated_displaced_persons", 0))
 
         # Dynamically append the newly analyzed disaster to our backend datasets

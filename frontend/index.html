@@ -349,12 +349,12 @@
     <div id="starfield"></div>
 
     <header class="nav-header">
-        <a href="index.html?v=2.0" class="logo-wrap">
+        <a href="index.html?v=3.2" class="logo-wrap">
             <div class="logo">CRISIS<span>CONNECT</span></div>
         </a>
         <div class="nav-actions" id="nav-actions">
             <!-- Dynamic buttons injected via JS -->
-            <a href="login.html?v=2.0" class="btn btn-outline btn-nav">Operator Login</a>
+            <a href="login.html?v=3.2" class="btn btn-outline btn-nav">Operator Login</a>
         </div>
     </header>
 
@@ -386,15 +386,10 @@
     <!-- Hero Section -->
     <section class="section-hero active" id="sec-0">
         <div class="content">
-            <h1 class="hero-title">EXPLORE /<br><span>THE INTEL.</span></h1>
-            <p class="subtext">
-                Mission critical disaster intelligence. High-precision 3D global monitoring 
-                for tactical response units and emergency operators.
+            <h1 class="hero-title" style="font-size: 72px; letter-spacing: 4px;">CRISIS<span>CONNECT</span></h1>
+            <p class="subtext" style="text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">
+                AI-POWERED GEOSPATIAL DISASTER ANALYSIS SYSTEM
             </p>
-            <div class="btn-group">
-                <button class="btn btn-filled" onclick="window.location.href='dashboard.html?v=3.0'">Command Center</button>
-                <a href="#" class="btn btn-outline" onclick="scrollToSection(1)">Specs</a>
-            </div>
         </div>
     </section>
 
@@ -403,7 +398,7 @@
         <div class="content">
             <h2 class="hero-title">Connected<br><span>Worldwide.</span></h2>
             <p class="subtext">
-                Our neural network monitors global activity 24/7, linking disparate data points 
+                Our system monitors global activity 24/7, linking disparate data points 
                 into a unified tactical vision.
             </p>
             <a href="#" class="btn btn-outline" onclick="scrollToSection(2)">See Capabilities</a>
@@ -439,8 +434,8 @@
                 Be part of the revolution in disaster resilience. The future of protection starts here.
             </p>
             <div class="btn-group" style="justify-content: center;">
-                <a href="login.html?v=2.0" class="btn btn-filled">Join the Movement</a>
-                <a href="dashboard.html?v=2.0" class="btn btn-outline">Explore More</a>
+                <a href="login.html?v=3.2" class="btn btn-filled">Join the Movement</a>
+                <a href="dashboard.html?v=3.2" class="btn btn-outline">Explore More</a>
             </div>
         </div>
     </section>
@@ -586,15 +581,15 @@
             const navActions = document.getElementById('nav-actions');
             if (token) {
                 navActions.innerHTML = `
-                    <a href="dashboard.html?v=2.0" class="btn btn-filled btn-nav">Go to Dashboard</a>
+                    <a href="dashboard.html?v=3.2" class="btn btn-filled btn-nav">Go to Dashboard</a>
                     <button onclick="ccLogout()" class="btn btn-outline btn-nav" style="border:none; padding: 0 10px; cursor:pointer;">⏏</button>
                 `;
             } else {
-                navActions.innerHTML = `<a href="login.html?v=2.0" class="btn btn-outline btn-nav">Operator Login</a>`;
+                navActions.innerHTML = `<a href="login.html?v=3.2" class="btn btn-outline btn-nav">Operator Login</a>`;
             }
         }
         updateNavActions();
     </script>
-    <script src="js/auth.js?v=2.0"></script>
+    <script src="js/auth.js?v=3.2"></script>
 </body>
 </html>
