@@ -1,7 +1,8 @@
 services:
   - type: web
     name: crisis-connect
-    env: docker
+    env: python
     plan: free
+    buildCommand: pip install --upgrade pip && pip install --only-binary=:all: numpy pandas scikit-learn xgboost scipy && pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn -w 2 -b 0.0.0.0:$PORT run:app --timeout 120
     healthCheckPath: /health
-    dockerfilePath: ./Dockerfile
