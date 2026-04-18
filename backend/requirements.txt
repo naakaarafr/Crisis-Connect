@@ -9,3 +9,4 @@ xgboost==2.0.3
 tzlocal==5.2
 gunicorn==21.2.0
 requests==2.31.0
+scipy==1.13.0
