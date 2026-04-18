@@ -7,3 +7,5 @@ scikit-learn==1.4.1.post1
 APScheduler==3.10.4
 xgboost==2.0.3
 tzlocal==5.2
+gunicorn==21.2.0
+requests==2.31.0
