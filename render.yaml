@@ -1,10 +1,11 @@
 services:
+  # ── SERVICE 1: BACKEND API (Python) ──────────────────────────────────────────
   - type: web
-    name: crisis-connect
+    name: crisis-connect-api
     env: python
     plan: free
     buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
-    startCommand: cd backend && gunicorn -w 1 --log-level debug --access-logfile - --error-logfile - -b 0.0.0.0:$PORT run:app --timeout 120
+    startCommand: cd backend && gunicorn -w 1 -b 0.0.0.0:$PORT run:app --timeout 120
     healthCheckPath: /health
     envVars:
       - key: FLASK_ENV
@@ -13,3 +14,12 @@ services:
         value: 3.11.0
       - key: PYTHONUNBUFFERED
         value: "1"
+
+  # ── SERVICE 2: FRONTEND DASHBOARD (Static) ───────────────────────────────────
+  - type: static
+    name: crisis-connect-dashboard
+    env: static
+    plan: free
+    # Injects the API URL into js/api.js during the build step
+    buildCommand: sed -i "s|BACKEND_URL_PLACEHOLDER|https://crisis-connect-api.onrender.com|g" frontend/js/api.js
+    publishPath: frontend
