@@ -32,7 +32,17 @@ import datetime
 logger = logging.getLogger(__name__)
 
 # ── Path bootstrap (needed when scheduler is imported from within the backend) ─
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+def _find_root():
+    """Robustly find the project root by searching upwards for 'src'."""
+    curr = os.path.abspath(os.path.dirname(__file__))
+    for _ in range(4): # Search up to 4 levels
+        if os.path.exists(os.path.join(curr, "src")) and os.path.exists(os.path.join(curr, "backend")):
+            return curr
+        curr = os.path.dirname(curr)
+    # Fallback to the previous relative logic if search fails
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+
+PROJECT_ROOT = _find_root()
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
