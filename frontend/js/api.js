@@ -9,7 +9,8 @@
  */
 
 const CRISIS_API = {
-    BASE_URL: 'http://127.0.0.1:5001',
+    // BASE_URL: '' means requests go to the same host/port serving the page (Render backend)
+    BASE_URL: '',
 
     endpoints: {
         health:       '/health',

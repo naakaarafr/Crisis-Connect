@@ -16,13 +16,14 @@ def create_app():
     app = Flask(__name__, static_folder=frontend_dir, static_url_path='')
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-    @app.after_request
-    def add_header(r):
-        """Force browser not to cache static files during development."""
-        r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-        r.headers["Pragma"] = "no-cache"
-        r.headers["Expires"] = "0"
-        return r
+    if os.environ.get('FLASK_ENV') != 'production':
+        @app.after_request
+        def add_header(r):
+            """Force browser not to cache static files during development."""
+            r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            r.headers["Pragma"] = "no-cache"
+            r.headers["Expires"] = "0"
+            return r
 
 
     # Enable CORS — allows the static frontend to call the API from any origin

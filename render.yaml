@@ -3,6 +3,11 @@ services:
     name: crisis-connect
     env: python
     plan: free
-    buildCommand: pip install --upgrade pip && pip install --only-binary=:all: -r backend/requirements.txt
-    startCommand: cd backend && gunicorn -w 2 -b 0.0.0.0:$PORT run:app --timeout 120
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
+    startCommand: cd backend && gunicorn -w 4 -b 0.0.0.0:$PORT run:app --timeout 120
     healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.0
