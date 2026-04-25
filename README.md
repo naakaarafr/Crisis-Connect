@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-crisis--connect--dashboard.onrender.com-brightgreen?style=for-the-badge)](https://crisis-connect-dashboard.onrender.com)
+[![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-crisis--connect--dashboard.onrender.com-brightgreen?style=for-the-badge)](https://crisis-connect-iwx0.onrender.com/)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-API-000000?style=for-the-badge&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![XGBoost](https://img.shields.io/badge/ML-XGBoost-FF6600?style=for-the-badge)](https://xgboost.readthedocs.io/)
@@ -208,29 +208,6 @@ The project ships with a `render.yaml` that provisions **two services** on Rende
 No additional environment variables are required for the base deployment.
 
 > **Note on cold starts:** The backend runs on Render's free tier, which spins down after inactivity. The first request after a cold start may take 30–60 seconds.
-
----
-
-## 👥 Contributors
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/naakaarafr">
-        <img src="https://github.com/naakaarafr.png" width="80px;" alt="naakaarafr"/><br />
-        <sub><b>Divvyansh Kudesiaa</b></sub>
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/sohamshaw23">
-        <img src="https://github.com/sohamshaw23.png" width="80px;" alt="sohamshaw23"/><br />
-        <sub><b>Soham Shaw</b></sub>
-      </a>
-    </td>
-  </tr>
-</table>
-
-Contributions are welcome. Open an issue or pull request to get started.
 
 ---
 
