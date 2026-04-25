@@ -43,24 +43,11 @@ Built with a clean split-service architecture (Flask REST API + vanilla JS stati
 
 ## 📸 Screenshots
 
-> **To add screenshots:** create a `screenshots/` folder in the repo root, add your images, and they will render below automatically.
+<img width="1600" height="904" alt="image" src="https://github.com/user-attachments/assets/5fb37597-1f9e-4da0-971d-6b71def0e320" />
 
-| Dashboard Overview | Drift Simulation |
-|:---:|:---:|
-| ![Dashboard](screenshots/dashboard.png) | ![Drift](screenshots/drift.png) |
+<img width="1600" height="904" alt="image" src="https://github.com/user-attachments/assets/e4793328-9790-4995-9f21-2d1a513e5c59" />
 
-| Hotspot Clustering | Route Optimization |
-|:---:|:---:|
-| ![Hotspots](screenshots/hotspots.png) | ![Routes](screenshots/routes.png) |
-
-```bash
-# How to add screenshots
-mkdir screenshots
-# copy your images into screenshots/
-git add screenshots/
-git commit -m "add dashboard screenshots"
-git push
-```
+<img width="1136" height="1244" alt="image" src="https://github.com/user-attachments/assets/9878813e-622d-4e71-8a1e-fe2ef022efdb" />
 
 ---
 
@@ -147,72 +134,6 @@ CrisisConnect uses a **split-service architecture** optimized for Render's free 
 |---|---|---|
 | `crisis-connect-api` | Web Service (Python 3.11) | `cd backend && gunicorn -w 1 -b 0.0.0.0:$PORT run:app --timeout 120` |
 | `crisis-connect-dashboard` | Static Site | `sed` injects API URL into `js/api.js`, serves `frontend/` |
-
----
-
-## 📁 Project Structure
-
-```
-Crisis-Connect/
-│
-├── backend/                        # Flask API application
-│   ├── run.py                      # App entrypoint — gunicorn target: run:app
-│   └── requirements.txt            # Backend deps: xgboost, pandas,
-│                                   #   scikit-learn, flask, gunicorn, networkx
-│
-├── src/                            # Core ML & simulation source modules
-│   └── models/
-│       ├── drift_model.py          # DriftModel class — wraps geo_utils physics,
-│       │                           #   returns predicted_lat/lon, search_radius,
-│       │                           #   survival_probability
-│       └── geo_utils.py            # drift_position() — vector math for
-│                                   #   lat/lon coordinate shift from
-│                                   #   wind + current force vectors
-│
-├── frontend/                       # Static dashboard (zero build step)
-│   ├── index.html                  # Main dashboard shell
-│   ├── js/
-│   │   └── api.js                  # REST client — BACKEND_URL_PLACEHOLDER
-│   │                               #   replaced by sed at Render build time
-│   └── css/                        # CSS Grid / Flexbox layout & styles
-│
-├── models/                         # Serialized trained ML model files
-│   └── *.pkl / *.json              # XGBoost displacement model, etc.
-│
-├── config/                         # App configuration files
-│
-├── data/
-│   └── raw/                        # Raw training & reference datasets
-│
-├── notebooks/                      # Jupyter notebooks for model dev & EDA
-│
-├── tests/                          # pytest test suite
-│   └── test_*.py                   # testpaths configured via pytest.ini
-│
-├── screenshots/                    # ← Place dashboard screenshots here
-│
-├── drift_standalone_export.py      # Self-contained drift physics module
-│                                   #   No Flask dependency — import anywhere:
-│                                   #   from drift_standalone_export import DriftModel
-│
-├── run_real_drift.py               # CLI tool: live drift prediction
-│                                   #   Geocodes location → fetches live wind
-│                                   #   from Open-Meteo → runs DriftModel
-│                                   #   Usage: python run_real_drift.py "Japan"
-│
-├── Dockerfile                      # python:3.11-slim base
-│                                   #   installs gcc/g++ for XGBoost/NumPy
-│                                   #   gunicorn -w 2, EXPOSE 10000
-├── render.yaml                     # Render blueprint: 2-service deployment
-├── requirements.txt                # Root deps: xgboost, pandas,
-│                                   #   scikit-learn, flask, pytest
-├── runtime.txt                     # python-3.11.0  (Render version pin)
-├── pytest.ini                      # [pytest] pythonpath=. testpaths=tests
-├── Makefile                        # Reserved (currently empty)
-├── .gitignore
-├── LICENSE                         # MIT
-└── README.md
-```
 
 ---
 
